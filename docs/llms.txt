@@ -356,12 +356,13 @@ See `CLAUDE.md` for full project guidelines (in German).
 
 ## Version History
 
-Current version: **v1.9.2**
+Current version: **v1.10.0**
 
 See `CHANGELOG.md` for the complete version history.
 
 Recent highlights:
-- **v1.9.2** — Vivino search rewritten to use the internal JSON API (was broken by Vivino's switch to client-side rendering); smarter term-reduction fallback for regional wines; fixed stats crash with no region data; wider search modal.
+- **v1.10.0** - Advanced filter with multi-AND conditions and saveable filter presets (resolves #5); Mistral added as a sixth AI provider; mobile chat keyboard fix v2 (CSS --kb-inset, interactive-widget); uniform 38px action buttons; ROADMAP extracted from README.
+- **v1.9.2** - Vivino search rewritten to use the internal JSON API (was broken by Vivino's switch to client-side rendering); smarter term-reduction fallback for regional wines; fixed stats crash with no region data; wider search modal.
 - **v1.9.1** — Fixed mobile keyboard covering chat input on iOS (Visual Viewport API). Chat history sidebar now closes on mobile when starting a new session.
 - **v1.9.0** — Full cellar CRUD via sommelier chat, MiniMax as fifth AI provider, auto-enrichment on AI-added wines, Vivino regional fallback, multilingual cellar context.
 - **v1.8.0** — Chat image upload, stock history area chart, search by year and grape, landing-page metadata.
