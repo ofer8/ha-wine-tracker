@@ -7,6 +7,16 @@
   var STORAGE_KEY = 'wine-advanced-filter';
   var T = window.T || {};
 
+  // Text fields that should get an autocomplete <datalist>. The IDs map
+  // to <datalist> elements already rendered on the main page by the wine
+  // edit modal (see _wine_form_fields.html), so no new backend data is
+  // needed. Name + notes are intentionally free-form.
+  var TEXT_DATALIST = {
+    region:   'regionList',
+    grape:    'grapeList',
+    location: 'locationList',
+  };
+
   // ── Field catalogue ────────────────────────────────────────────────────
   // Each field defines its grouping, input type, and accepted operators.
   // Order here is the order shown inside each accordion group.
@@ -423,13 +433,19 @@
     }
 
     if (field.type === 'text') {
-      return el('input', {
+      // Re-use the existing <datalist> elements rendered by the wine
+      // edit modal (regionList / grapeList / locationList) so the filter
+      // inputs auto-suggest existing values - click to see the list,
+      // type to filter. Name and notes stay free-form (no list).
+      var attrs = {
         type: 'text',
         class: 'adv-cond-input',
         placeholder: tr('filter_placeholder_text'),
         value: rule.value || '',
         oninput: function (e) { state.rules[field.key].value = e.target.value; updateBadge(); },
-      });
+      };
+      if (TEXT_DATALIST[field.key]) attrs.list = TEXT_DATALIST[field.key];
+      return el('input', attrs);
     }
 
     if (field.type === 'number') {
