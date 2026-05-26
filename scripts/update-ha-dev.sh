@@ -28,9 +28,12 @@ else
   git clone --depth=1 "$REPO_URL" "$REPO_DIR"
 fi
 
-echo "==> rsync wine-tracker/ -> $ADDON_DIR"
+echo "==> Copy wine-tracker/ -> $ADDON_DIR"
+# rsync isn't installed in HA's SSH BusyBox, so wipe + cp -a instead.
+# This is fine because the addon is stopped/rebuilt right after.
+rm -rf "$ADDON_DIR"
 mkdir -p "$ADDON_DIR"
-rsync -a --delete "$REPO_DIR/wine-tracker/" "$ADDON_DIR/"
+cp -a "$REPO_DIR/wine-tracker/." "$ADDON_DIR/"
 
 echo "==> Patch config.yaml (slug + name for dev variant)"
 sed -i "s/^slug: .*/slug: \"$ADDON_SLUG\"/" "$ADDON_DIR/config.yaml"
