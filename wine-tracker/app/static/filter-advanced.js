@@ -99,12 +99,52 @@
       var parsed = JSON.parse(raw);
       if (parsed && typeof parsed.rules === 'object' && parsed.rules !== null) {
         state.rules = parsed.rules;
+        pruneInactiveRules();
       }
     } catch (e) { /* ignore */ }
   }
 
+  // Drop rules that are not really filtering (e.g. {op: 'contains', value: ''}
+  // left over from older sessions). Keeps state.rules and the badge count
+  // honest without changing user-visible behaviour.
+  function pruneInactiveRules() {
+    var changed = false;
+    for (var k in state.rules) {
+      if (!state.rules.hasOwnProperty(k)) continue;
+      if (!isRuleActive(state.rules[k])) {
+        delete state.rules[k];
+        changed = true;
+      }
+    }
+    if (changed) save();
+  }
+
+  // A rule counts as "active" only when it would actually filter something:
+  // - it needs an operator
+  // - op-only operators (empty / not_empty) always count
+  // - value-bearing operators need a non-empty value (or, for ranges /
+  //   multi-selects, at least one non-empty entry)
+  // This used to be Object.keys(state.rules).length, which also counted
+  // stale half-edited entries left over from older localStorage state
+  // (e.g. {op: 'contains', value: ''}), causing the header badge to show
+  // a count even though nothing was filtered.
+  function isRuleActive(rule) {
+    if (!rule || !rule.op) return false;
+    if (rule.op === 'empty' || rule.op === 'not_empty') return true;
+    var v = rule.value;
+    if (v === undefined || v === null || v === '') return false;
+    if (Array.isArray(v)) {
+      return v.some(function (x) { return x !== '' && x !== null && x !== undefined; });
+    }
+    return true;
+  }
+
   function activeCount() {
-    return Object.keys(state.rules).length;
+    var n = 0;
+    for (var k in state.rules) {
+      if (state.rules.hasOwnProperty(k) && isRuleActive(state.rules[k])) n++;
+    }
+    return n;
   }
 
   // ── Evaluation ────────────────────────────────────────────────────────
@@ -290,8 +330,8 @@
   }
 
   function renderGroup(group, fields, expandIfEmpty) {
-    var hasActive = fields.some(function (f) { return state.rules[f.key]; });
-    var activeInGroup = fields.reduce(function (n, f) { return n + (state.rules[f.key] ? 1 : 0); }, 0);
+    var hasActive = fields.some(function (f) { return isRuleActive(state.rules[f.key]); });
+    var activeInGroup = fields.reduce(function (n, f) { return n + (isRuleActive(state.rules[f.key]) ? 1 : 0); }, 0);
 
     var details = el('details', { class: 'adv-filter-group' });
     // Expand when this group has an active condition, or when the whole
