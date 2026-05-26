@@ -1,8 +1,17 @@
 # Changelog
 
-## Unreleased
+## 1.10.0
 
+- **Advanced filter with multiple AND-conditions** - filter the cellar by any combination of fields (type, vintage, region, grape, rating, drink window, location, source, format, ...) in a single popover. Resolves #5.
+- **Saveable filter presets** - name and save your favourite filter combinations, then re-apply them with one click. Includes edit mode with overwrite or save-as-new.
+- **Default filter entry setting** - choose whether the filter button opens the simple search or the advanced filter by default (Settings → Filter).
 - **Mistral AI as a new AI provider** - added Mistral (OpenAI-compatible API) as a sixth AI provider for both label recognition and the sommelier chat. The default model is `pixtral-large-latest` for vision; regular Mistral text models work for chat. Resolves #13.
+- **Mobile chat keyboard fix (v2)** - switched the chat full-page layout to a CSS `--kb-inset` variable so the input lifts above the on-screen keyboard reliably under HA Ingress, where `visualViewport` events do not propagate. Uses `interactive-widget=resizes-content` for browsers that support it.
+- **Uniform 38px action buttons** - all toolbar actions (search, filter, view modes, settings, ...) now share the same height for a cleaner toolbar rhythm.
+- **MDI icons for toggle-empty and logout** - swapped the unicode prefix on the "show empty bottles" toggle for a proper `mdi-eye` icon, and added `mdi-logout` to the logout row in settings.
+- **Trimmed README + ROADMAP.md** - moved the roadmap into its own file and slimmed the README so the most important info (features, install, AI providers) is visible without scrolling.
+- **Docs page discoverability** - linked the GitHub Pages docs from the README and renamed `docs/llm.txt` to the conventional `docs/llms.txt`.
+- **Tests** - added 9 new tests for filter-preset CRUD, the advanced-filter modal, and the DB schema.
 
 ## 1.9.2
 

@@ -100,6 +100,16 @@
             </div>
           </div>
         </div>
+
+        <div class="settings-row">
+          <div class="settings-row-label">{{ t.settings_advanced_filter_default }}</div>
+          <div class="settings-row-control">
+            <label class="toggle-switch">
+              <input type="checkbox" id="advancedFilterDefaultToggle" onchange="setAdvancedFilterDefault(this.checked)">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+        </div>
       </div>
 
       <!-- Chat (only when AI is configured) -->
@@ -207,7 +217,7 @@
         <div class="settings-row">
           <div class="settings-row-label"><i class="mdi mdi-account"></i> {{ auth_user }}</div>
           <div class="settings-row-control">
-            <a href="{{ ingress }}/logout" class="btn-cancel">{{ t.btn_logout }}</a>
+            <a href="{{ ingress }}/logout" class="btn-cancel"><i class="mdi mdi-logout"></i> {{ t.btn_logout }}</a>
           </div>
         </div>
       </div>

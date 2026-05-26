@@ -50,6 +50,16 @@ class TestIndex:
         resp = client.get("/")
         assert b'openViewModal' in resp.data
 
+    def test_advanced_filter_modal_rendered(self, client, sample_wine):
+        """Advanced filter modal markup and its JS bundle should be on the page."""
+        resp = client.get("/")
+        assert b'id="advancedFilterModal"' in resp.data
+        assert b'filter-advanced.js' in resp.data
+        # Popover entry point is present so users can reach the modal
+        assert b'openAdvancedFilter' in resp.data
+        # Settings toggle for the "advanced-as-default" preference
+        assert b'advancedFilterDefaultToggle' in resp.data
+
     def test_type_filter(self, client, sample_wine):
         resp = client.get("/?type=Rotwein")
         assert resp.status_code == 200
@@ -58,7 +68,7 @@ class TestIndex:
         """Settings modal should contain About section with app version."""
         resp = client.get("/")
         html = resp.data.decode()
-        assert "v1.9.2" in html
+        assert "v1.10.0" in html
         assert "settings_about" in html or "Über" in html
 
     def test_view_modal_present(self, client):
