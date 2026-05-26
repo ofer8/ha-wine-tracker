@@ -2408,6 +2408,27 @@ body.chat-page .grid { display: none; }
 .adv-cond-op:focus,
 .adv-cond-input:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
 .adv-cond-input-narrow { max-width: 120px; }
+
+/* Native <input type="date"> calendar icon: WebKit renders it as a dark
+   glyph that disappears on dark themes. Invert it in dark mode so it
+   stays visible. The :not(.light) selector matches both the default
+   dark theme and the explicit dark variants. */
+.adv-cond-input[type="date"]::-webkit-calendar-picker-indicator,
+.adv-cond-input[type="datetime-local"]::-webkit-calendar-picker-indicator,
+.adv-cond-input[type="time"]::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  opacity: .8;
+  filter: invert(1);
+}
+html.light .adv-cond-input[type="date"]::-webkit-calendar-picker-indicator,
+html.light .adv-cond-input[type="datetime-local"]::-webkit-calendar-picker-indicator,
+html.light .adv-cond-input[type="time"]::-webkit-calendar-picker-indicator {
+  filter: none;
+}
+.adv-cond-input[type="date"]::-webkit-calendar-picker-indicator:hover,
+.adv-cond-input[type="datetime-local"]::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
+}
 .adv-cond-empty-hint { color: var(--muted, #888); font-style: italic; font-size: .85rem; }
 
 .adv-cond-range { display: flex; align-items: center; gap: .35rem; }
@@ -2496,4 +2517,59 @@ body.chat-page .grid { display: none; }
   .adv-filter-footer .btn-cancel,
   .adv-filter-footer .btn-primary,
   .adv-filter-footer .btn-secondary { flex: 1; justify-content: center; }
+}
+
+/* ── Inline name-prompt dialog (replaces window.prompt) ─────────────────────
+   window.prompt() is silently blocked inside the HA Ingress iframe on iOS
+   Safari, so we render an in-page dialog with the same role. Sits above the
+   advanced-filter modal (.modal-overlay z-index: 200) at 220.
+   The shared .modal class defaults to max-width: 360px which is too tight
+   for the "Save preset" title + a comfortable input, hence the override. */
+.adv-filter-name-overlay {
+  background: rgba(0,0,0,.6);
+  z-index: 220;
+}
+.adv-filter-name-modal {
+  max-width: 480px;
+  width: 100%;
+}
+.adv-filter-name-modal .modal-body {
+  padding: 1.25rem;
+  gap: .5rem;
+}
+.adv-filter-name-label {
+  font-size: .85rem;
+  color: var(--muted, #888);
+}
+.adv-filter-name-input {
+  width: 100%; box-sizing: border-box;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: .7rem .85rem;
+  color: var(--text);
+  font-size: 1rem;
+  font-family: inherit;
+}
+.adv-filter-name-input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+/* The base stylesheet has no .modal-footer rules at all - dialogs that
+   include one (like this name-prompt) need their own padding + spacing. */
+.adv-filter-name-footer {
+  display: flex; justify-content: flex-end;
+  gap: .6rem;
+  padding: .75rem 1.25rem 1.25rem;
+  border-top: 1px solid var(--border);
+}
+.adv-filter-name-footer .btn-cancel,
+.adv-filter-name-footer .btn-primary {
+  padding: .55rem 1.1rem;
+  display: inline-flex; align-items: center; gap: .35rem;
+}
+@media (max-width: 500px) {
+  .adv-filter-name-footer { padding: .75rem 1rem 1rem; }
+  .adv-filter-name-footer .btn-cancel,
+  .adv-filter-name-footer .btn-primary { flex: 1; justify-content: center; }
 }

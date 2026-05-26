@@ -47,3 +47,31 @@
     </div>
   </div>
 </div>
+
+{# Inline name-prompt dialog: replaces window.prompt() which is silently
+   blocked inside the HA Ingress iframe on iOS Safari. Sits above the
+   advanced-filter modal via a higher z-index applied in style.css. #}
+<div class="modal-overlay adv-filter-name-overlay" id="advFilterNameDialog">
+  <div class="modal adv-filter-name-modal">
+    <div class="modal-header">
+      <span id="advFilterNameTitle">{{ t.filter_preset_save }}</span>
+      <button class="modal-close" onclick="AdvancedFilter.closeNameDialog()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <label class="adv-filter-name-label" for="advFilterNameInput">
+        {{ t.filter_preset_save_prompt }}
+      </label>
+      <input type="text" id="advFilterNameInput" class="adv-filter-name-input"
+             placeholder="{{ t.filter_preset_save_placeholder }}"
+             autocomplete="off" autocapitalize="sentences">
+    </div>
+    <div class="modal-footer adv-filter-name-footer">
+      <button type="button" class="btn-cancel" onclick="AdvancedFilter.closeNameDialog()">
+        {{ t.filter_advanced_cancel }}
+      </button>
+      <button type="button" class="btn-primary" id="advFilterNameOkBtn" onclick="AdvancedFilter.confirmNameDialog()">
+        <i class="mdi mdi-content-save-outline"></i> {{ t.filter_preset_save_btn }}
+      </button>
+    </div>
+  </div>
+</div>

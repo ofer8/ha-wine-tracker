@@ -60,9 +60,44 @@ class TestIndex:
         # Settings toggle for the "advanced-as-default" preference
         assert b'advancedFilterDefaultToggle' in resp.data
 
+    def test_filter_preset_name_dialog_rendered(self, client, sample_wine):
+        """Inline name-prompt dialog must be present.
+
+        Regression test: window.prompt() is silently blocked in the HA Ingress
+        iframe on iOS Safari, so the Save / Save-as-new flow needs an in-page
+        dialog instead. Without this markup, tapping "Save preset" on mobile
+        does nothing.
+        """
+        resp = client.get("/")
+        assert b'id="advFilterNameDialog"' in resp.data
+        assert b'id="advFilterNameInput"' in resp.data
+        # The JS-exposed handlers wired to the dialog's buttons:
+        assert b'AdvancedFilter.closeNameDialog' in resp.data
+        assert b'AdvancedFilter.confirmNameDialog' in resp.data
+
     def test_type_filter(self, client, sample_wine):
         resp = client.get("/?type=Rotwein")
         assert resp.status_code == 200
+
+    def test_drink_window_filter_labels_rendered(self, client, sample_wine):
+        """Drink-window filter radios must render their translated labels.
+
+        Regression test for a bug where {{ t.filter_all }}, {{ t.filter_dw_in }}
+        and {{ t.filter_dw_last }} had lost their `t.` prefix, causing the
+        labels to render as empty strings and leaving only the counts visible
+        in the filter dropdown (see commit 051b5cf).
+        """
+        resp = client.get("/")
+        html = resp.data.decode()
+        # Default language is German; the three previously-broken labels:
+        assert "Im Trinkfenster" in html
+        assert "Letztes Jahr" in html
+        # And the one that was always correct (sanity check):
+        assert "Ausserhalb" in html
+        # The buggy raw Jinja variable names must NOT leak into the output:
+        assert "{{ filter_all }}" not in html
+        assert "{{ filter_dw_in }}" not in html
+        assert "{{ filter_dw_last }}" not in html
 
     def test_about_section_with_version(self, client):
         """Settings modal should contain About section with app version."""

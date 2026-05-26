@@ -273,22 +273,30 @@
     if (!container) return;
     container.innerHTML = '';
 
+    // Fresh-open behaviour: when no filter is set anywhere, expand every
+    // group so the user immediately sees all available fields. As soon
+    // as anything is active, collapse-by-default and only expand the
+    // groups that hold the active conditions, so the list stays scannable.
+    var noFiltersActive = activeCount() === 0;
+
     GROUPS.forEach(function (g) {
       var fields = FIELDS.filter(function (f) { return f.group === g.key; });
       if (!fields.length) return;
-      container.appendChild(renderGroup(g, fields));
+      container.appendChild(renderGroup(g, fields, noFiltersActive));
     });
 
     updateBadge();
     updateSaveButtons();
   }
 
-  function renderGroup(group, fields) {
+  function renderGroup(group, fields, expandIfEmpty) {
     var hasActive = fields.some(function (f) { return state.rules[f.key]; });
     var activeInGroup = fields.reduce(function (n, f) { return n + (state.rules[f.key] ? 1 : 0); }, 0);
 
     var details = el('details', { class: 'adv-filter-group' });
-    if (hasActive) details.open = true;
+    // Expand when this group has an active condition, or when the whole
+    // modal is empty (so users see every group on first open).
+    if (hasActive || expandIfEmpty) details.open = true;
     var summary = el('summary', { class: 'adv-filter-group-summary' }, [
       el('i', { class: 'mdi ' + group.icon + ' adv-filter-group-icon' }),
       el('span', { class: 'adv-filter-group-label', text: tr(group.label) }),
@@ -689,17 +697,54 @@
       });
   }
 
+  // Pending callback for the inline name dialog. window.prompt() is silently
+  // blocked in the HA Ingress iframe on iOS Safari, so we render our own
+  // dialog and route both "save" and "save as new" through it.
+  var _nameDialogResolve = null;
+
+  function openNameDialog(defaultValue, onConfirm) {
+    var overlay = document.getElementById('advFilterNameDialog');
+    var input = document.getElementById('advFilterNameInput');
+    if (!overlay || !input) {
+      // Fallback: behave like before if the markup isn't present.
+      var name = window.prompt(tr('filter_preset_save_prompt'), defaultValue || '');
+      if (name) onConfirm(name.trim());
+      return;
+    }
+    _nameDialogResolve = onConfirm;
+    input.value = defaultValue || '';
+    overlay.classList.add('open');
+    // Defer focus so iOS shows the keyboard reliably on first open.
+    setTimeout(function () {
+      try { input.focus(); input.select(); } catch (e) {}
+    }, 50);
+  }
+
+  function closeNameDialog() {
+    var overlay = document.getElementById('advFilterNameDialog');
+    if (overlay) overlay.classList.remove('open');
+    _nameDialogResolve = null;
+  }
+
+  function confirmNameDialog() {
+    var input = document.getElementById('advFilterNameInput');
+    if (!input) { closeNameDialog(); return; }
+    var name = (input.value || '').trim();
+    if (!name) {
+      try { input.focus(); } catch (e) {}
+      return;
+    }
+    var cb = _nameDialogResolve;
+    closeNameDialog();
+    if (cb) cb(name);
+  }
+
   function openSaveDialog() {
-    var name = window.prompt(tr('filter_preset_save_prompt'), '');
-    if (!name) return;
-    createPreset(name.trim());
+    openNameDialog('', function (name) { createPreset(name); });
   }
 
   function openSaveAsNewDialog() {
-    var defaultName = state.editingId ? '' : '';
-    var name = window.prompt(tr('filter_preset_save_prompt'), defaultName);
-    if (!name) return;
-    createPreset(name.trim());
+    openNameDialog('', function (name) { createPreset(name); });
   }
 
   function createPreset(name) {
@@ -743,6 +788,23 @@
   // ── Init ──────────────────────────────────────────────────────────────
   load();
 
+  // Wire up Enter / Escape / backdrop-click for the inline name dialog.
+  (function () {
+    var overlay = document.getElementById('advFilterNameDialog');
+    var input = document.getElementById('advFilterNameInput');
+    if (!overlay) return;
+    overlay.addEventListener('click', function (e) {
+      // Click on the backdrop (not the inner modal) closes the dialog.
+      if (e.target === overlay) closeNameDialog();
+    });
+    if (input) {
+      input.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') { e.preventDefault(); confirmNameDialog(); }
+        else if (e.key === 'Escape') { e.preventDefault(); closeNameDialog(); }
+      });
+    }
+  })();
+
   window.AdvancedFilter = {
     evaluate: evaluate,
     openModal: openModal,
@@ -752,6 +814,8 @@
     updateBadge: updateBadge,
     openSaveDialog: openSaveDialog,
     openSaveAsNewDialog: openSaveAsNewDialog,
+    closeNameDialog: closeNameDialog,
+    confirmNameDialog: confirmNameDialog,
     cancelEdit: cancelEdit,
     activeCount: activeCount,
     // expose for tests / debug
