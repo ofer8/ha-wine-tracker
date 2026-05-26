@@ -9,7 +9,7 @@
 <script>
 (function(){var n=localStorage.getItem('wine-theme-name')||'homeassistant';if(n&&n!=='classic')document.documentElement.setAttribute('data-theme',n);var s=localStorage.getItem('wine-theme')||'system';var e=s==='system'?(window.matchMedia('(prefers-color-scheme:light)').matches?'light':'dark'):s;if(e==='light')document.documentElement.classList.add('light');})();
 </script>
-<title>{{ t.timeline }} – Wine Tracker</title>
+<title>{{ t.timeline }} - Wine Tracker</title>
 <style>
 /* ── Timeline-specific styles ─────────────────────────────── */
 .timeline-summary {
@@ -127,7 +127,7 @@ function openModal(id) {
 function closeModal(id) {
   document.getElementById(id).classList.remove('open');
 }
-// Close modal on overlay click (skip wineModal — handled by _wine_edit_modal.html)
+// Close modal on overlay click (skip wineModal - handled by _wine_edit_modal.html)
 document.querySelectorAll('.modal-overlay').forEach(function(el) {
   el.addEventListener('click', function(e) {
     if (e.target !== el) return;

@@ -69,7 +69,7 @@ class TestInitDb:
         conn.commit()
         conn.close()
 
-        # Now run init_db() – should add missing columns
+        # Now run init_db() - should add missing columns
         wine_app.init_db()
 
         conn = sqlite3.connect(wine_app.DB_PATH)
@@ -146,7 +146,7 @@ class TestWineLogTable:
         )
         db.commit()
 
-        # Re-run init_db — should NOT duplicate entries
+        # Re-run init_db - should NOT duplicate entries
         wine_app.init_db()
 
         conn = sqlite3.connect(wine_app.DB_PATH)

@@ -1,4 +1,4 @@
-{# Wine edit modal – shared add/edit form included on all pages.
+{# Wine edit modal - shared add/edit form included on all pages.
    Expects globals: t, ingress, currency, ai_enabled, auth_readonly,
                     wine_types, used_regions_list, used_grapes,
                     used_purchased_at, used_locations
@@ -570,7 +570,7 @@ function populateFormFromAi(fields, imageFilename) {
   if (fields.notes) document.getElementById('wine_notes').value = fields.notes;
   if (fields.bottle_format) document.getElementById('wine_bottle_format').value = fields.bottle_format;
 
-  // Enrichment fields — hidden inputs that persist to DB on submit
+  // Enrichment fields - hidden inputs that persist to DB on submit
   if (fields.maturity_data) {
     document.getElementById('wine_maturity_data').value = JSON.stringify(fields.maturity_data);
   }

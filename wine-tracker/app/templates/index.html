@@ -140,7 +140,7 @@
       {% endif %}
       <div class="card-extra">
         {% if w['price'] %}<span class="price">{{ currency }} {{ "%.2f"|format(w['price']) }}</span>{% endif %}
-        {% if w['drink_from'] or w['drink_until'] %}<span class="drink-window"><i class="mdi mdi-calendar-range"></i> {{ w['drink_from'] or '?' }}–{{ w['drink_until'] or '?' }}</span>{% endif %}
+        {% if w['drink_from'] or w['drink_until'] %}<span class="drink-window"><i class="mdi mdi-calendar-range"></i> {{ w['drink_from'] or '?' }}-{{ w['drink_until'] or '?' }}</span>{% endif %}
         {% if w['grape'] %}<span><i class="mdi mdi-fruit-grapes"></i> {{ w['grape'] }}</span>{% endif %}
         {% if w['location'] %}<span><i class="mdi mdi-map-marker"></i> {{ w['location'] }}</span>{% endif %}
         {% if w['vivino_id'] %}<a class="card-vivino-link" href="https://www.vivino.com/w/{{ w['vivino_id'] }}" target="_blank" rel="noopener" onclick="event.stopPropagation()" title="Vivino"><i class="mdi mdi-open-in-new"></i> Vivino</a>{% endif %}
@@ -348,7 +348,7 @@ function renderTableView() {
 
   grid.appendChild(table);
 
-  // Sort click handlers — persist in localStorage
+  // Sort click handlers - persist in localStorage
   var savedSortCol = localStorage.getItem('wineTableSortCol') || '';
   var savedSortAsc = localStorage.getItem('wineTableSortAsc') === 'true';
   var sortDir = {};
@@ -712,7 +712,7 @@ function closeModal(id) {
   document.getElementById(id).classList.remove('open');
 }
 
-// Close on overlay click (skip wineModal — handled by _wine_edit_modal.html)
+// Close on overlay click (skip wineModal - handled by _wine_edit_modal.html)
 document.querySelectorAll('.modal-overlay').forEach(function(el) {
   el.addEventListener('click', function(e) {
     if (e.target !== el) return;
@@ -997,7 +997,7 @@ function openViewModal(id, wine) {
 
   // Drink window
   if (w.drink_from || w.drink_until) {
-    var window_str = (w.drink_from || '?') + ' – ' + (w.drink_until || '?');
+    var window_str = (w.drink_from || '?') + ' - ' + (w.drink_until || '?');
     details += viewRow('mdi-calendar-range', T.view_drink_window || 'Drink window', window_str);
   }
 
@@ -1139,7 +1139,7 @@ function renderCard(w) {
   }
   var extra = '';
   if (w.price) extra += '<span class="price">' + escapeHtml(CURRENCY) + ' ' + Number(w.price).toFixed(2) + '</span>';
-  if (w.drink_from || w.drink_until) extra += '<span class="drink-window"><i class="mdi mdi-calendar-range"></i> ' + (w.drink_from || '?') + '–' + (w.drink_until || '?') + '</span>';
+  if (w.drink_from || w.drink_until) extra += '<span class="drink-window"><i class="mdi mdi-calendar-range"></i> ' + (w.drink_from || '?') + '-' + (w.drink_until || '?') + '</span>';
   if (w.grape) extra += '<span><i class="mdi mdi-fruit-grapes"></i> ' + escapeHtml(w.grape) + '</span>';
   if (w.location) extra += '<span><i class="mdi mdi-map-marker"></i> ' + escapeHtml(w.location) + '</span>';
   if (w.vivino_id) extra += '<a class="card-vivino-link" href="https://www.vivino.com/w/' + encodeURIComponent(w.vivino_id) + '" target="_blank" rel="noopener" onclick="event.stopPropagation()" title="Vivino"><i class="mdi mdi-open-in-new"></i> Vivino</a>';
@@ -1384,7 +1384,7 @@ document.getElementById('deleteForm').addEventListener('submit', function(e) {
 // Apply filters on initial load (hides empty bottles when showEmpty is false)
 applyFilters();
 
-// Drink window warnings — reusable so it works after AJAX add/edit/duplicate
+// Drink window warnings - reusable so it works after AJAX add/edit/duplicate
 function applyDrinkWindowWarning(root) {
   var year = new Date().getFullYear();
   // If root is a single .card element, wrap it; otherwise query all cards within root
@@ -1417,7 +1417,7 @@ function applyDrinkWindowWarning(root) {
 }
 applyDrinkWindowWarning();
 
-// Shimmer / skeleton loading — reveal images with fade-in once loaded
+// Shimmer / skeleton loading - reveal images with fade-in once loaded
 function initImageShimmer(container) {
   (container || document).querySelectorAll('.card-img img:not(.loaded)').forEach(function(img) {
     if (img.complete && img.naturalHeight > 0) {

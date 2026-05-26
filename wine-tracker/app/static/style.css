@@ -1,5 +1,5 @@
 /* ══════════════════════════════════════════════════════════════════════════════
-   Wine Tracker – Unified Stylesheet
+   Wine Tracker - Unified Stylesheet
    Shared between index.html and stats.html
    ══════════════════════════════════════════════════════════════════════════════ */
 
@@ -611,7 +611,7 @@ html.light .filter-option:hover { background: rgba(0,0,0,.05); }
 .wine-table td.wine-table-type,
 .wine-table th.wine-table-type { width: 40px; text-align: center !important; overflow: visible; text-overflow: clip; padding: .55rem .25rem; }
 .wine-table-right { text-align: right !important; }
-/* Fixed-width columns (px — constant at any viewport) */
+/* Fixed-width columns (px - constant at any viewport) */
 .wine-table-col-year { width: 90px; }
 .wine-table-col-region { width: 180px; }
 .wine-table-col-grape { width: 160px; }
@@ -1072,7 +1072,7 @@ textarea { resize: vertical; min-height: 70px; font-family: inherit; }
   margin-top: auto;
 }
 
-/* Data section (Export / Import) — inherits settings-row layout, adds hint
+/* Data section (Export / Import) - inherits settings-row layout, adds hint
    below the label and aligns label to the top so long text wraps naturally. */
 .data-row { align-items: flex-start; }
 .data-row-hint {
@@ -2212,7 +2212,7 @@ body.chat-page .grid { display: none; }
    set hidden=true. Restore the expected hide behaviour. */
 .filter-btn-badge[hidden] { display: none; }
 
-/* The link at the bottom of the popover — matches .filter-option above */
+/* The link at the bottom of the popover - matches .filter-option above */
 .filter-option-advanced {
   width: 100%;
   background: transparent;

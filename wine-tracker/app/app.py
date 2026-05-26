@@ -485,7 +485,7 @@ def init_db():
                 grape        TEXT
             )
         """)
-        # Migrate existing DBs – add columns if missing
+        # Migrate existing DBs - add columns if missing
         existing = {row[1] for row in db.execute("PRAGMA table_info(wines)")}
         migrations = {
             "purchased_at":   "TEXT",
@@ -577,7 +577,7 @@ def geocode_region(region_name):
     # Exact match first
     if key in REGION_COORDS:
         return REGION_COORDS[key]
-    # Substring match – e.g. "Toskana, Italien" → finds "toskana"
+    # Substring match - e.g. "Toskana, Italien" → finds "toskana"
     for name, coords in REGION_COORDS.items():
         if name in key or key in name:
             return coords
@@ -853,7 +853,7 @@ def edit(wine_id):
     # For enrichment fields: if the form submission doesn't carry the key at
     # all (e.g. quantity +/- buttons build a minimal FormData), keep whatever
     # is already stored in the DB instead of wiping it. An explicitly present
-    # but empty key — as sent by the edit modal's hidden inputs — still clears.
+    # but empty key - as sent by the edit modal's hidden inputs - still clears.
     if "maturity_data" in request.form:
         maturity_data_raw = request.form.get("maturity_data", "").strip() or None
     else:
@@ -1100,7 +1100,7 @@ def stats_page():
         "SELECT type, SUM(quantity) as qty FROM wines WHERE type IS NOT NULL AND type != '' GROUP BY type ORDER BY qty DESC"
     ).fetchall()]
 
-    # Top regions (bar chart – limited)
+    # Top regions (bar chart - limited)
     top_regions = [dict(r) for r in db.execute(
         "SELECT region, SUM(quantity) as qty FROM wines WHERE region IS NOT NULL AND region != '' GROUP BY region ORDER BY qty DESC LIMIT 7"
     ).fetchall()]
@@ -1165,7 +1165,7 @@ def stats_page():
     in_stock = db.execute("SELECT SUM(quantity) FROM wines WHERE quantity > 0").fetchone()[0] or 0
     out_of_stock = db.execute("SELECT COUNT(*) FROM wines WHERE quantity = 0").fetchone()[0] or 0
 
-    # Drink window chart – bottles per year, stacked by type
+    # Drink window chart - bottles per year, stacked by type
     dw_wines = [dict(r) for r in db.execute(
         "SELECT id, name, year, type, quantity, drink_from, drink_until FROM wines "
         "WHERE drink_until IS NOT NULL AND drink_until != '' AND quantity > 0"
@@ -1196,7 +1196,7 @@ def stats_page():
         dw_type_order = []
         dw_wine_names = {}
 
-    # Stock history – last 6 months
+    # Stock history - last 6 months
     today = date.today()
     current_stock = totals["bottles"] or 0
 
@@ -1257,7 +1257,7 @@ def stats_page():
             "consumed": md["consumed"] + md["removed"],
         })
 
-    # Tooltip data – wine names grouped by type and region
+    # Tooltip data - wine names grouped by type and region
     wines_by_type = {}
     for row in db.execute(
         "SELECT id, name, year, type, quantity FROM wines "
@@ -1308,7 +1308,7 @@ def stats_page():
 def export_data():
     """Download a full backup (ZIP with JSON + CSV + images).
 
-    Readonly users may export — it only reads data.
+    Readonly users may export - it only reads data.
     """
     zip_bytes = build_export_zip(get_db(), UPLOAD_DIR, app_version=APP_VERSION)
     fname = export_filename()
@@ -1407,7 +1407,7 @@ def import_commit():
     token = (payload.get("token") or "").strip()
     strategy = (payload.get("strategy") or "skip").strip()
 
-    # Token must be a bare identifier — no path traversal.
+    # Token must be a bare identifier - no path traversal.
     if not token or "/" in token or "\\" in token or ".." in token:
         return jsonify({"ok": False, "error": "Ungültiger Token"}), 400
     if strategy not in ("skip", "overwrite"):
@@ -1420,7 +1420,7 @@ def import_commit():
             path = candidate
             break
     if not path:
-        return jsonify({"ok": False, "error": "Import-Datei abgelaufen — bitte erneut hochladen"}), 404
+        return jsonify({"ok": False, "error": "Import-Datei abgelaufen - bitte erneut hochladen"}), 404
 
     with open(path, "rb") as fh:
         raw = fh.read()
@@ -1887,7 +1887,7 @@ def _vivino_country_code(currency):
 
 
 # Vivino's /search/wines pages are now fully redirected to the client-rendered
-# /explore page for all locales — server-side HTML scraping no longer works.
+# /explore page for all locales - server-side HTML scraping no longer works.
 # Instead we call the same JSON endpoint that the explore page itself uses.
 # min_rating=1 satisfies the "at least one filter" requirement of the API.
 _VIVINO_EXPLORE_URL = "https://www.vivino.com/api/explore/explore"
@@ -1911,7 +1911,7 @@ def vivino_search():
 
     Vivino's /search/wines pages are now always redirected to the
     client-rendered /explore page, so HTML scraping no longer works.
-    The explore page itself fetches results from /api/explore/explore —
+    The explore page itself fetches results from /api/explore/explore -
     we call that endpoint directly.  A session warm-up visit to the
     Vivino homepage seeds the session cookies so the API accepts the
     request without a 403.
@@ -1989,7 +1989,7 @@ def vivino_search():
             region = wine.get("region", {}) or {}
             country_obj = region.get("country", {}) or {}
 
-            # Grape varieties — explore API uses {name:...} directly
+            # Grape varieties - explore API uses {name:...} directly
             grapes = []
             for g_item in wine.get("grapes", []) or []:
                 name = g_item.get("name") or g_item.get("grape", {}).get("name", "")
@@ -2241,7 +2241,7 @@ def api_chat_sessions_list():
         sessions = [dict(r) for r in rows]
         return jsonify(ok=True, sessions=sessions)
 
-    # POST – create new session
+    # POST - create new session
     now = datetime.now().isoformat()
     cur = db.execute(
         "INSERT INTO chat_sessions (title, created, updated) VALUES (?, ?, ?)",
@@ -2728,7 +2728,7 @@ def _process_chat_delete_wine(response_text, db):
 
 @app.route("/api/chat", methods=["POST"])
 def api_chat():
-    """Wine sommelier chat – AI answers questions about the user's wine cellar."""
+    """Wine sommelier chat - AI answers questions about the user's wine cellar."""
     opts = load_options()
     provider = opts.get("ai_provider", "none").strip().lower()
     if provider == "none" or not _is_ai_configured(opts):
@@ -2852,7 +2852,7 @@ def api_chat():
         f"- Give advice on drinking windows and when to open specific bottles\n"
         f"- Compare wines in the cellar\n"
         f"- Suggest what wines to buy to complement the collection\n"
-        f"- Analyze wine label images the user sends you — identify the wine, describe it, and give recommendations\n\n"
+        f"- Analyze wine label images the user sends you - identify the wine, describe it, and give recommendations\n\n"
         f"Rules:\n"
         f"- When recommending wines, ALWAYS pick from the user's cellar first\n"
         f"- If no wine in the cellar fits, say so and suggest what to buy\n"
@@ -2903,7 +2903,7 @@ def api_chat():
             f"The user has enabled wine editing. You can ADD, EDIT, and DELETE wines in the cellar.\n"
             f"When the user asks you to manage wines, output the appropriate action block.\n\n"
             f"GENERAL RULES:\n"
-            f"- ALWAYS confirm with the user before ANY action — show them the details and ask for confirmation\n"
+            f"- ALWAYS confirm with the user before ANY action - show them the details and ask for confirmation\n"
             f"- Only output action blocks AFTER the user has confirmed\n"
             f"- wine_type MUST be one of: Rotwein, Weisswein, Rosé, Schaumwein, Dessertwein, Likörwein, Anderes\n"
             f"- You can only perform ONE action per message\n\n"
@@ -2924,7 +2924,7 @@ def api_chat():
             f"[/EDIT_WINE]\n"
             f"- Supported fields: name, year, wine_type, region, grape, quantity, rating, notes, price, drink_from, drink_until, location, purchased_at\n\n"
             f"=== DELETE WINE ===\n"
-            f"Use the wine ID from [ID:...] in the cellar data. Be VERY careful — always double-confirm deletion.\n"
+            f"Use the wine ID from [ID:...] in the cellar data. Be VERY careful - always double-confirm deletion.\n"
             f"[DELETE_WINE]\n"
             f'{{"id": 42}}\n'
             f"[/DELETE_WINE]"

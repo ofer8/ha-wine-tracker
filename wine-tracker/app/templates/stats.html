@@ -9,7 +9,7 @@
 <script>
 (function(){var n=localStorage.getItem('wine-theme-name')||'homeassistant';if(n&&n!=='classic')document.documentElement.setAttribute('data-theme',n);var s=localStorage.getItem('wine-theme')||'system';var e=s==='system'?(window.matchMedia('(prefers-color-scheme:light)').matches?'light':'dark'):s;if(e==='light')document.documentElement.classList.add('light');})();
 </script>
-<title>{{ t.stats_title }} – Wine Tracker</title>
+<title>{{ t.stats_title }} - Wine Tracker</title>
 </head>
 <body>
 
@@ -464,7 +464,7 @@ function closeModal(id) {
   document.getElementById(id).classList.remove('open');
 }
 
-// Close modal on overlay click (skip wineModal — handled by _wine_edit_modal.html)
+// Close modal on overlay click (skip wineModal - handled by _wine_edit_modal.html)
 document.querySelectorAll('.modal-overlay').forEach(function(el) {
   el.addEventListener('click', function(e) {
     if (e.target !== el) return;
@@ -568,7 +568,7 @@ function openViewModal(id, wine) {
     details += viewRow('mdi-cash', T.label_price || 'Price', CURRENCY + ' ' + Number(w.price).toFixed(2));
   }
   if (w.drink_from || w.drink_until) {
-    var window_str = (w.drink_from || '?') + ' – ' + (w.drink_until || '?');
+    var window_str = (w.drink_from || '?') + ' - ' + (w.drink_until || '?');
     details += viewRow('mdi-calendar-range', T.view_drink_window || 'Drink window', window_str);
   }
   if (w.location) details += viewRow('mdi-map-marker', T.label_location || 'Location', w.location);
@@ -914,7 +914,7 @@ function initGlobe() {
     }
   });
 
-  // Pointer interaction – drag to rotate (X = longitude, Y = latitude)
+  // Pointer interaction - drag to rotate (X = longitude, Y = latitude)
   canvas.addEventListener('pointerdown', (e) => {
     pointerDown = true;
     pointerX = e.clientX;

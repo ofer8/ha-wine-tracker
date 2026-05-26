@@ -1,5 +1,5 @@
 """
-Tests for Flask routes — CRUD operations on wines.
+Tests for Flask routes - CRUD operations on wines.
 All requests use AJAX headers to get JSON responses.
 """
 import io
@@ -322,7 +322,7 @@ class TestEditWine:
         assert row["wine"]["taste_profile"]["body"] == 4
         assert row["wine"]["food_pairings"] == ["Steak", "Cheese"]
 
-        # Now simulate a quantity +1 click — minimal FormData without the
+        # Now simulate a quantity +1 click - minimal FormData without the
         # enrichment fields (as built by changeQty in index.html).
         resp = client.post(
             f"/edit/{wine_id}",
@@ -931,7 +931,7 @@ class TestAuth:
         # Then logout
         resp = client.get("/logout")
         assert resp.status_code == 302
-        # Verify logged out — next request should redirect to login
+        # Verify logged out - next request should redirect to login
         resp = client.get("/")
         assert resp.status_code == 302
         assert "/login" in resp.headers["Location"]

@@ -2,11 +2,11 @@
 Export / Import for Wine Tracker.
 
 Export format: a ZIP archive containing
-    manifest.json   — schema version, timestamp, counts
-    wines.json      — authoritative wine data (all DB columns)
-    wines.csv       — flat, human-readable view (for spreadsheet apps)
-    timeline.json   — timeline entries (referenced by original wine id)
-    images/         — original image files (filenames match `image` column)
+    manifest.json   - schema version, timestamp, counts
+    wines.json      - authoritative wine data (all DB columns)
+    wines.csv       - flat, human-readable view (for spreadsheet apps)
+    timeline.json   - timeline entries (referenced by original wine id)
+    images/         - original image files (filenames match `image` column)
 
 The JSON is the source of truth on re-import; the CSV is informational
 so the standard user can open the archive in Excel / Numbers / Sheets.
@@ -102,7 +102,7 @@ def _build_readme(manifest: dict) -> str:
 |------|-------------|
 | `README.md` | This file |
 | `manifest.json` | Export metadata (schema version, timestamp, counts) |
-| `wines.json` | **Authoritative** wine data — all {len(WINE_COLUMNS)} columns, used for re-import |
+| `wines.json` | **Authoritative** wine data - all {len(WINE_COLUMNS)} columns, used for re-import |
 | `wines.csv` | Human-readable subset ({len(CSV_COLUMNS)} columns) for Excel / Numbers / Sheets |
 | `timeline.json` | Drink/add history entries, referenced by original wine ID |
 | `images/` | Original bottle images (filenames match the `image` field in wines.json) |
@@ -112,18 +112,18 @@ def _build_readme(manifest: dict) -> str:
 
 ---
 
-## wines.json — field reference
+## wines.json - field reference
 
 | Field | Type | Notes |
 |-------|------|-------|
-| `id` | integer | Original DB id — used to link timeline entries; ignored on import |
+| `id` | integer | Original DB id - used to link timeline entries; ignored on import |
 | `name` | string | Wine name |
 | `year` | integer | Vintage year |
 | `type` | string | e.g. `Red`, `White`, `Rosé`, `Sparkling`, `Dessert` |
 | `region` | string | Region / appellation |
 | `grape` | string | Grape variety / blend |
 | `quantity` | integer | Bottles currently in cellar |
-| `rating` | number | 0 – 100 personal rating |
+| `rating` | number | 0 - 100 personal rating |
 | `price` | number | Purchase price |
 | `purchased_at` | string | Purchase date (ISO 8601) |
 | `drink_from` | integer | Earliest recommended drinking year |
@@ -140,7 +140,7 @@ def _build_readme(manifest: dict) -> str:
 
 ---
 
-## timeline.json — field reference
+## timeline.json - field reference
 
 | Field | Type | Notes |
 |-------|------|-------|
@@ -220,7 +220,7 @@ def build_export_zip(db, upload_dir: str, app_version: str = "") -> bytes:
             src = os.path.join(upload_dir, img)
             if os.path.isfile(src):
                 zf.write(src, arcname=f"images/{img}")
-            # Missing images are silently skipped — the JSON still references
+            # Missing images are silently skipped - the JSON still references
             # the filename so the user sees what's missing after a restore.
 
     return buf.getvalue()
@@ -296,7 +296,7 @@ def _normalize_wine(w: dict) -> dict:
     """Coerce types so a wine dict is ready to insert into SQLite."""
     out = {k: w.get(k) for k in WINE_COLUMNS if k != "id"}
     out["year"] = _coerce_int(out.get("year"))
-    # Preserve 0 explicitly — only fall back when the value is truly missing.
+    # Preserve 0 explicitly - only fall back when the value is truly missing.
     qty = _coerce_int(out.get("quantity"))
     out["quantity"] = qty if qty is not None else 1
     rating = _coerce_int(out.get("rating"))
@@ -332,12 +332,12 @@ def parse_import_file(data: bytes, filename: str = "") -> dict:
     """Parse a ZIP or CSV payload into a normalized import structure.
 
     Returns a dict with keys:
-        source          — "zip" or "csv"
-        schema_version  — int (0 for CSV)
-        wines           — list of normalized wine dicts (no id)
-        timeline        — list of timeline entries (empty for CSV)
-        images          — dict {filename: bytes}
-        original_ids    — list of original wine ids, parallel to ``wines``
+        source          - "zip" or "csv"
+        schema_version  - int (0 for CSV)
+        wines           - list of normalized wine dicts (no id)
+        timeline        - list of timeline entries (empty for CSV)
+        images          - dict {filename: bytes}
+        original_ids    - list of original wine ids, parallel to ``wines``
                           (used only for timeline re-linking on apply)
     """
     is_zip = data[:2] == b"PK" or filename.lower().endswith(".zip")
@@ -462,8 +462,8 @@ def apply_import(parsed: dict, matches: list[dict], db, upload_dir: str,
     Parameters
     ----------
     strategy : str
-        ``"skip"``  — keep existing duplicates, insert only new wines
-        ``"overwrite"`` — update existing duplicates, insert new wines
+        ``"skip"``  - keep existing duplicates, insert only new wines
+        ``"overwrite"`` - update existing duplicates, insert new wines
 
     Returns a summary dict: ``{"inserted": N, "updated": N, "skipped": N}``.
     """

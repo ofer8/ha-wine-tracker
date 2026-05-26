@@ -976,7 +976,7 @@ class TestChatImageUpload:
         )
         assert json.loads(resp.data)["ok"] is True
 
-        # Load session — should have 4 messages (2 user + 2 assistant), 2 with images
+        # Load session - should have 4 messages (2 user + 2 assistant), 2 with images
         resp = client.get(f"/api/chat/sessions/{session_id}")
         msgs = json.loads(resp.data)["messages"]
         image_msgs = [m for m in msgs if m.get("image_path")]
@@ -1652,7 +1652,7 @@ class TestChatWineEditing:
             '"image_index": null}\n'
             '[/ADD_WINE]'
         )
-        # Enrichment returns a *different* window — must be ignored
+        # Enrichment returns a *different* window - must be ignored
         mock_anthropic.return_value = json.dumps({
             "drink_from": 2099,
             "drink_until": 2100,

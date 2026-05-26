@@ -1,9 +1,9 @@
 /**
- * wine-modal.js — Shared functions for the wine add/edit modal.
+ * wine-modal.js - Shared functions for the wine add/edit modal.
  *
  * Expects global variables (defined inline before this script loads):
- *   T       – translation object
- *   INGRESS – HA ingress base path (string)
+ *   T       - translation object
+ *   INGRESS - HA ingress base path (string)
  *
  * Provides:
  *   previewImg(), rotateWineImage(), deleteWineImage(),

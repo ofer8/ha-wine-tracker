@@ -220,7 +220,7 @@ class TestWineJsonSchema:
 class TestEnvConfig:
     """Tests for ENV variable configuration override (standalone Docker)."""
 
-    # All ENV keys that load_options() reads — clear them before each test
+    # All ENV keys that load_options() reads - clear them before each test
     _ENV_KEYS = [
         "CURRENCY", "LANGUAGE", "AI_PROVIDER",
         "ANTHROPIC_API_KEY", "ANTHROPIC_MODEL",

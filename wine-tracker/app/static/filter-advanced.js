@@ -1,4 +1,4 @@
-// Advanced Filter — a powerful client-side filter that augments the quick
+// Advanced Filter - a powerful client-side filter that augments the quick
 // popover filter on index.html. Conditions are AND-combined and evaluated
 // against each card's data-* attributes inside applyFilters().
 (function () {
@@ -75,7 +75,7 @@
   };
 
   // ── State ─────────────────────────────────────────────────────────────
-  // state.rules is an object keyed by field — one rule per field at most.
+  // state.rules is an object keyed by field - one rule per field at most.
   // Rule shape: { op: 'between', value: [min, max] }
   var state = {
     rules: {},        // { [fieldKey]: { op, value } }
@@ -87,7 +87,7 @@
   function apiBase() {
     // INGRESS is declared via `const INGRESS = '{{ ingress }}'` in index.html.
     // Because const doesn't attach to window, reach it via eval from the outer
-    // script scope — but fall back gracefully if it doesn't exist.
+    // script scope - but fall back gracefully if it doesn't exist.
     var ingress = '';
     try { ingress = window.INGRESS != null ? window.INGRESS : (typeof INGRESS !== 'undefined' ? INGRESS : ''); }
     catch (e) { /* ignore */ }
@@ -395,7 +395,7 @@
     row.appendChild(el('label', { class: 'adv-cond-label', text: tr(field.label) }));
 
     var opSelect = el('select', { class: 'adv-cond-op' });
-    opSelect.appendChild(el('option', { value: '', text: '—' }));
+    opSelect.appendChild(el('option', { value: '', text: '-' }));
     OPS[field.type].forEach(function (op) {
       var o = el('option', { value: op, text: tr(OP_LABEL[op] || op) });
       if (rule && rule.op === op) o.selected = 'selected';
@@ -456,7 +456,7 @@
         wrap.appendChild(numberInput(field, lo, tr('filter_placeholder_min'), function (v) {
           var r = state.rules[field.key]; r.value = [v, r.value ? r.value[1] : '']; updateBadge();
         }));
-        wrap.appendChild(el('span', { class: 'adv-cond-range-sep', text: '–' }));
+        wrap.appendChild(el('span', { class: 'adv-cond-range-sep', text: '-' }));
         wrap.appendChild(numberInput(field, hi, tr('filter_placeholder_max'), function (v) {
           var r = state.rules[field.key]; r.value = [r.value ? r.value[0] : '', v]; updateBadge();
         }));
@@ -471,7 +471,7 @@
       var selected = Array.isArray(rule.value) ? rule.value.slice() : [];
       var options = distinctValues(field.key);
       if (options.length === 0) {
-        return el('span', { class: 'adv-cond-empty-hint', text: '—' });
+        return el('span', { class: 'adv-cond-empty-hint', text: '-' });
       }
       var wrap2 = el('div', { class: 'adv-cond-chips' });
       options.forEach(function (opt) {
@@ -508,7 +508,7 @@
           type: 'date', class: 'adv-cond-input', value: d1,
           oninput: function (e) { var r = state.rules[field.key]; r.value = [e.target.value, r.value ? r.value[1] : '']; updateBadge(); },
         }));
-        w.appendChild(el('span', { class: 'adv-cond-range-sep', text: '–' }));
+        w.appendChild(el('span', { class: 'adv-cond-range-sep', text: '-' }));
         w.appendChild(el('input', {
           type: 'date', class: 'adv-cond-input', value: d2,
           oninput: function (e) { var r = state.rules[field.key]; r.value = [r.value ? r.value[0] : '', e.target.value]; updateBadge(); },

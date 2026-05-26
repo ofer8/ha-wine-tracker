@@ -7,7 +7,7 @@
 ![version][version-badge]
 ![ai powered][ai-badge]
 
-A sleek, modern wine cellar tracker running directly in your Home Assistant sidebar. Manage your entire collection — from label photo to tasting notes — with an AI sommelier that can add, edit and delete wines straight from the chat.
+A sleek, modern wine cellar tracker running directly in your Home Assistant sidebar. Manage your entire collection - from label photo to tasting notes - with an AI sommelier that can add, edit and delete wines straight from the chat.
 
 ## Screenshots
 
@@ -18,35 +18,35 @@ A sleek, modern wine cellar tracker running directly in your Home Assistant side
   <img src="https://raw.githubusercontent.com/xenofex7/ha-wine-tracker/main/assets/260220_statistics_screen.png" alt="Statistics with Globe & Charts" width="800">
 </p>
 <p align="center">
-  <img src="https://raw.githubusercontent.com/xenofex7/ha-wine-tracker/main/assets/260220_add_wine_screen.png" alt="Add Wine — AI, Vivino or Manual" width="800">
+  <img src="https://raw.githubusercontent.com/xenofex7/ha-wine-tracker/main/assets/260220_add_wine_screen.png" alt="Add Wine - AI, Vivino or Manual" width="800">
   <img src="https://raw.githubusercontent.com/xenofex7/ha-wine-tracker/main/assets/260220_wine_edit_screen.png" alt="Edit Wine Details" width="800">
 </p>
 
 ## Features
 
 - **Wine cards** with photo, vintage, type, region, grape variety, rating & notes
-- **AI wine label recognition** — snap a label photo and let AI fill in all fields, including maturity phases, taste profile and food pairings (Anthropic, OpenAI, OpenRouter, Ollama, MiniMax, Mistral)
-- **AI sommelier chat with full cellar CRUD** — ask questions about your cellar, upload wine label photos, and add / edit / delete wines directly from the conversation; persistent sessions
-- **Vivino wine search** — search by name, see ratings, region & price, and import directly; regional fallback chain surfaces country-specific wines (e.g. Australian labels)
-- **Vivino ID management** — view, edit & test Vivino wine links directly in the edit modal
-- **Reload missing data** — re-analyze wines with incomplete fields via AI or Vivino
-- **Star rating** (1–5 stars), quick `+`/`−` quantity buttons & duplicate wines
-- **Bottle format** — track bottle sizes from Piccolo (0.1875l) to Nebuchadnezzar (15l), auto-detected by AI
-- **Cellar view modes** — Cards, List, Grid, and a sortable Table view with responsive columns
-- **Activity timeline** — chronological log of wines added, consumed, restocked & removed
-- **Maturity graph** — AI-generated bell curve showing Youth → Maturity → Peak → Decline with a "Today" marker
-- **Taste profile & food pairings** — AI-generated body/tannin/acidity/sweetness bars and matching dishes in your language
-- **Unified navigation** — consistent header with filter dropdown across all pages; hamburger menu on narrow viewports
+- **AI wine label recognition** - snap a label photo and let AI fill in all fields, including maturity phases, taste profile and food pairings (Anthropic, OpenAI, OpenRouter, Ollama, MiniMax, Mistral)
+- **AI sommelier chat with full cellar CRUD** - ask questions about your cellar, upload wine label photos, and add / edit / delete wines directly from the conversation; persistent sessions
+- **Vivino wine search** - search by name, see ratings, region & price, and import directly; regional fallback chain surfaces country-specific wines (e.g. Australian labels)
+- **Vivino ID management** - view, edit & test Vivino wine links directly in the edit modal
+- **Reload missing data** - re-analyze wines with incomplete fields via AI or Vivino
+- **Star rating** (1-5 stars), quick `+`/`−` quantity buttons & duplicate wines
+- **Bottle format** - track bottle sizes from Piccolo (0.1875l) to Nebuchadnezzar (15l), auto-detected by AI
+- **Cellar view modes** - Cards, List, Grid, and a sortable Table view with responsive columns
+- **Activity timeline** - chronological log of wines added, consumed, restocked & removed
+- **Maturity graph** - AI-generated bell curve showing Youth → Maturity → Peak → Decline with a "Today" marker
+- **Taste profile & food pairings** - AI-generated body/tannin/acidity/sweetness bars and matching dishes in your language
+- **Unified navigation** - consistent header with filter dropdown across all pages; hamburger menu on narrow viewports
 - **Search & filter** by wine type, vintage year, grape variety, name, region or notes
 - **Drink window** (from/until year) with AI estimation
 - **Purchase price** with configurable currency
 - **Autocomplete** for region, grape variety, purchase source & storage location
 - **Interactive 3D globe** showing your wine regions on a WebGL globe
-- **Statistics** — donut charts, stock history area chart, total bottles, total liters, value overview & average age
+- **Statistics** - donut charts, stock history area chart, total bottles, total liters, value overview & average age
 - **6 themes** with dark & light mode
 - **7 languages**: DE, EN, FR, IT, ES, PT, NL
 - **REST API** at `/api/summary` for HA sensor integration
-- **Fully responsive** — desktop, tablet & mobile
+- **Fully responsive** - desktop, tablet & mobile
 
 ## Configuration
 
@@ -83,7 +83,7 @@ Pick one AI provider and configure its API key and model. The AI is used for lab
 
 ## Data Persistence
 
-All data (SQLite database + photos) is stored under `/share/wine-tracker/` — preserved across add-on updates, restarts, and Home Assistant updates.
+All data (SQLite database + photos) is stored under `/share/wine-tracker/` - preserved across add-on updates, restarts, and Home Assistant updates.
 
 ## Home Assistant Sensor (Optional)
 
@@ -101,9 +101,9 @@ sensor:
 
 ## Roadmap
 
-- **Export / Import** (CSV, JSON) — full collection backup and migration
-- **Spending trends** — visualize spending by month, region, or wine type
-- **Maturity calendar** — overview of which wines become drinkable each year
+- **Export / Import** (CSV, JSON) - full collection backup and migration
+- **Spending trends** - visualize spending by month, region, or wine type
+- **Maturity calendar** - overview of which wines become drinkable each year
 - **Drink window notifications** via Home Assistant automations
 - **Native Lovelace dashboard card** to embed wine stats anywhere in HA
 - **PWA support** with offline access

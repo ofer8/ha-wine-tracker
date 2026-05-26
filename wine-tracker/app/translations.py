@@ -1,4 +1,4 @@
-# ── Wine Tracker – Translations ────────────────────────────────────────────────
+# ── Wine Tracker - Translations ────────────────────────────────────────────────
 # Flat key-value dict per language.  Access via TRANSLATIONS["en"]["key"].
 # Wine types use keys like wine_type_Rotwein so the DB value maps directly.
 
@@ -130,7 +130,7 @@ TRANSLATIONS = {
     "filter_preset_none": "Keine gespeicherten Filter",
     "filter_preset_name_exists": "Name bereits vergeben",
     "filter_add_condition": "+ Bedingung hinzufügen",
-    "filter_no_conditions": "Keine Bedingungen — alle Weine werden angezeigt",
+    "filter_no_conditions": "Keine Bedingungen - alle Weine werden angezeigt",
     "filter_active_count": "aktiv",
     "filter_placeholder_text": "Wert...",
     "filter_placeholder_min": "von",
@@ -482,7 +482,7 @@ TRANSLATIONS = {
     "filter_preset_none": "No saved filters",
     "filter_preset_name_exists": "Name already exists",
     "filter_add_condition": "+ Add condition",
-    "filter_no_conditions": "No conditions — showing all wines",
+    "filter_no_conditions": "No conditions - showing all wines",
     "filter_active_count": "active",
     "filter_placeholder_text": "Value...",
     "filter_placeholder_min": "from",
@@ -825,7 +825,7 @@ TRANSLATIONS = {
     "filter_preset_none": "Aucun filtre enregistré",
     "filter_preset_name_exists": "Ce nom existe déjà",
     "filter_add_condition": "+ Ajouter une condition",
-    "filter_no_conditions": "Aucune condition — tous les vins sont affichés",
+    "filter_no_conditions": "Aucune condition - tous les vins sont affichés",
     "filter_active_count": "actif",
     "filter_placeholder_text": "Valeur...",
     "filter_placeholder_min": "de",
@@ -1168,7 +1168,7 @@ TRANSLATIONS = {
     "filter_preset_none": "Nessun filtro salvato",
     "filter_preset_name_exists": "Nome già esistente",
     "filter_add_condition": "+ Aggiungi condizione",
-    "filter_no_conditions": "Nessuna condizione — tutti i vini vengono mostrati",
+    "filter_no_conditions": "Nessuna condizione - tutti i vini vengono mostrati",
     "filter_active_count": "attivo",
     "filter_placeholder_text": "Valore...",
     "filter_placeholder_min": "da",
@@ -1511,7 +1511,7 @@ TRANSLATIONS = {
     "filter_preset_none": "Sin filtros guardados",
     "filter_preset_name_exists": "El nombre ya existe",
     "filter_add_condition": "+ Añadir condición",
-    "filter_no_conditions": "Sin condiciones — se muestran todos los vinos",
+    "filter_no_conditions": "Sin condiciones - se muestran todos los vinos",
     "filter_active_count": "activo",
     "filter_placeholder_text": "Valor...",
     "filter_placeholder_min": "de",
@@ -1854,7 +1854,7 @@ TRANSLATIONS = {
     "filter_preset_none": "Nenhum filtro salvo",
     "filter_preset_name_exists": "Este nome já existe",
     "filter_add_condition": "+ Adicionar condição",
-    "filter_no_conditions": "Sem condições — todos os vinhos são exibidos",
+    "filter_no_conditions": "Sem condições - todos os vinhos são exibidos",
     "filter_active_count": "ativo",
     "filter_placeholder_text": "Valor...",
     "filter_placeholder_min": "de",
@@ -2197,7 +2197,7 @@ TRANSLATIONS = {
     "filter_preset_none": "Geen opgeslagen filters",
     "filter_preset_name_exists": "Naam bestaat al",
     "filter_add_condition": "+ Voorwaarde toevoegen",
-    "filter_no_conditions": "Geen voorwaarden — alle wijnen worden getoond",
+    "filter_no_conditions": "Geen voorwaarden - alle wijnen worden getoond",
     "filter_active_count": "actief",
     "filter_placeholder_text": "Waarde...",
     "filter_placeholder_min": "van",

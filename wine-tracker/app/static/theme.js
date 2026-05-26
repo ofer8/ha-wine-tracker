@@ -240,7 +240,7 @@ function confirmImport() {
         _showImportError(res.body.error || 'Import fehlgeschlagen');
         return;
       }
-      // Success — reload so the new wines appear.
+      // Success - reload so the new wines appear.
       closeModal('importPreviewModal');
       location.reload();
     })
