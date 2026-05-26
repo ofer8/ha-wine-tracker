@@ -2207,6 +2207,10 @@ body.chat-page .grid { display: none; }
   display: inline-flex; align-items: center; justify-content: center;
   box-shadow: 0 0 0 2px var(--surface);
 }
+/* `display: inline-flex` above overrides the HTML `hidden` attribute,
+   so the badge stayed visible (as an empty blue dot) even when JS had
+   set hidden=true. Restore the expected hide behaviour. */
+.filter-btn-badge[hidden] { display: none; }
 
 /* The link at the bottom of the popover — matches .filter-option above */
 .filter-option-advanced {
