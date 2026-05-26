@@ -40,8 +40,19 @@ sed -i "s/^slug: .*/slug: \"$ADDON_SLUG\"/" "$ADDON_DIR/config.yaml"
 sed -i "s/^name: .*/name: \"$ADDON_NAME\"/" "$ADDON_DIR/config.yaml"
 
 echo "==> Reload + rebuild + restart addon"
-ha addons reload
-ha addons rebuild "$ADDON_SLUG" || true
-ha addons restart "$ADDON_SLUG" || true
+# Newer HA versions print "addons is deprecated, please use apps instead!"
+# but both still work; `ha apps` is preferred so we use that.
+ha apps reload
 
-echo "==> Done. Open Wine Tracker (Dev) in HA."
+if ha apps info "$ADDON_SLUG" >/dev/null 2>&1; then
+  ha apps rebuild "$ADDON_SLUG" || true
+  ha apps restart "$ADDON_SLUG" || true
+  echo "==> Done. Open Wine Tracker (Dev) in HA."
+else
+  echo
+  echo "==> First-time install detected."
+  echo "    The addon is now visible in HA but not yet installed."
+  echo "    Open: Settings -> Add-ons -> Add-on Store -> Local add-ons"
+  echo "          -> Wine Tracker (Dev) -> Install"
+  echo "    Future runs will rebuild + restart automatically."
+fi
