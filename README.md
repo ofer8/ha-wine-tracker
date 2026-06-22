@@ -307,6 +307,8 @@ sensor:
     scan_interval: 3600
 ```
 
+> **Note:** the `by_type` / `by_region` / `by_grape` / `by_decade` attributes are JSON lists — use a template sensor to extract individual values for a dashboard.
+
 ### Drink-window sensor + notification
 
 ```yaml

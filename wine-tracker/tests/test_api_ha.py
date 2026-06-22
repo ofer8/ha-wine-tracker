@@ -115,6 +115,7 @@ def test_stats_aggregates(db):
     assert s["total_value"] == round(2 * 10.0 + 3 * 20.0, 2)   # 80.0
     assert s["avg_age"] == round(((2026 - 2018) + (2026 - 2012)) / 2, 1)  # 11.0
     assert s["avg_rating"] == 3.0
+    assert s["avg_price"] == round((10.0 + 20.0) / 2, 2)   # 15.0 — wine-row-weighted, mirrors /stats page
 
 
 def test_stats_by_type_uses_english(db):
