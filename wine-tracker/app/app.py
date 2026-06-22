@@ -779,6 +779,30 @@ def index():
     )
 
 
+def buy_list_row_to_dict(row):
+    return dict(row)
+
+
+def query_out_of_stock(db):
+    rows = db.execute(
+        "SELECT * FROM wines WHERE quantity = 0 ORDER BY type, name, year"
+    ).fetchall()
+    return [dict(r) for r in rows]
+
+
+@app.route("/buy-list")
+def buy_list_page():
+    db = get_db()
+    items = [
+        buy_list_row_to_dict(r)
+        for r in db.execute(
+            "SELECT * FROM buy_list ORDER BY added_at DESC, id DESC"
+        ).fetchall()
+    ]
+    out_of_stock = query_out_of_stock(db)
+    return render_template("buy_list.html", items=items, out_of_stock=out_of_stock)
+
+
 def _normalize_duplicate_name(value):
     """Normalize AI/user label text enough for duplicate-name comparison."""
     folded = unicodedata.normalize("NFKD", value or "")

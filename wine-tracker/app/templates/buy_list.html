@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="{{ lang }}">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@mdi/font@7/css/materialdesignicons.min.css">
+<link rel="stylesheet" href="{{ ingress }}/static/style.css">
+<script>
+(function(){var n=localStorage.getItem('wine-theme-name')||'homeassistant';if(n&&n!=='classic')document.documentElement.setAttribute('data-theme',n);var s=localStorage.getItem('wine-theme')||'system';var e=s==='system'?(window.matchMedia('(prefers-color-scheme:light)').matches?'light':'dark'):s;if(e==='light')document.documentElement.classList.add('light');})();
+</script>
+<title>{{ t.buy_list_title }}</title>
+</head>
+<body>
+<header>
+  <a class="nav-brand" href="{{ ingress }}/"><img src="{{ ingress }}/static/logo.png" alt="Wine Tracker" class="nav-logo"></a>
+  <nav class="nav-links">
+    <a class="nav-link" href="{{ ingress }}/">{{ t.nav_cellar }}</a>
+    <a class="nav-link active" href="{{ ingress }}/buy-list">{{ t.nav_buy_list }}</a>
+    <a class="nav-link" href="{{ ingress }}/timeline">{{ t.timeline }}</a>
+    <a class="nav-link" href="{{ ingress }}/stats">{{ t.stats_title }}</a>
+  </nav>
+  <button class="nav-hamburger" onclick="toggleNavMenu(event)" aria-label="Menu"><i class="mdi mdi-menu"></i></button>
+  <div class="nav-menu" id="navMenu">
+    <a href="{{ ingress }}/" class="nav-menu-item">{{ t.nav_cellar }}</a>
+    <a href="{{ ingress }}/buy-list" class="nav-menu-item active">{{ t.nav_buy_list }}</a>
+    <a href="{{ ingress }}/timeline" class="nav-menu-item">{{ t.timeline }}</a>
+    <a href="{{ ingress }}/stats" class="nav-menu-item">{{ t.stats_title }}</a>
+  </div>
+  <div class="header-spacer"></div>
+</header>
+
+<main class="container">
+  <div class="buy-list-tabs">
+    <button class="bl-tab active" data-tab="wishlist" onclick="blSelectTab('wishlist')">{{ t.tab_wishlist }} ({{ items|length }})</button>
+    <button class="bl-tab" data-tab="out-of-stock" onclick="blSelectTab('out-of-stock')">{{ t.tab_out_of_stock }} ({{ out_of_stock|length }})</button>
+  </div>
+
+  <section id="blPanelWishlist" class="bl-panel">
+    <button class="btn-primary" onclick="openWishlistAdd()"><i class="mdi mdi-plus"></i> {{ t.btn_add_to_wishlist }}</button>
+    {% if items %}
+    <div class="bl-grid">
+      {% for it in items %}
+      <div class="card bl-card" data-id="{{ it.id }}">
+        {% if it.image %}<img src="{{ ingress }}/uploads/{{ it.image }}" alt="" class="bl-thumb">{% endif %}
+        <div class="bl-card-body">
+          <div class="bl-name">{{ it.name }}{% if it.year %} ({{ it.year }}){% endif %}</div>
+          <div class="bl-meta">{{ it.region or '' }}{% if it.grape %} - {{ it.grape }}{% endif %}</div>
+          <div class="bl-meta">{% if it.price %}{{ it.price }} {{ currency }}{% endif %} - {{ t.label_desired_qty }}: {{ it.desired_qty }}</div>
+        </div>
+        <div class="bl-actions">
+          <button class="btn-small" onclick='openMoveToCellar({{ it|tojson }})'>{{ t.btn_move_to_cellar }}</button>
+          <button class="btn-small" onclick='openWishlistEdit({{ it|tojson }})'><i class="mdi mdi-pencil"></i></button>
+          <button class="btn-small btn-danger" onclick="removeWishlistItem({{ it.id }})"><i class="mdi mdi-close"></i></button>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p class="bl-empty">{{ t.empty_wishlist }}</p>
+    {% endif %}
+  </section>
+
+  <section id="blPanelOutOfStock" class="bl-panel" style="display:none">
+    {% if out_of_stock %}
+    <div class="bl-grid">
+      {% for w in out_of_stock %}
+      <div class="card bl-card" data-wine-id="{{ w.id }}">
+        {% if w.image %}<img src="{{ ingress }}/uploads/{{ w.image }}" alt="" class="bl-thumb">{% endif %}
+        <div class="bl-card-body">
+          <div class="bl-name">{{ w.name }}{% if w.year %} ({{ w.year }}){% endif %}</div>
+          <div class="bl-meta">{{ w.region or '' }}{% if w.grape %} - {{ w.grape }}{% endif %}</div>
+        </div>
+        <div class="bl-actions">
+          <button class="btn-small" onclick="rebuyWine({{ w.id }}, this)"><i class="mdi mdi-cart-plus"></i> {{ t.btn_rebuy }}</button>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p class="bl-empty">{{ t.empty_out_of_stock }}</p>
+    {% endif %}
+  </section>
+</main>
+
+<nav class="bottom-tab-bar">
+  <a class="tab-item" href="{{ ingress }}/"><i class="mdi mdi-bottle-wine"></i><span>{{ t.nav_cellar }}</span></a>
+  <a class="tab-item active" href="{{ ingress }}/buy-list"><i class="mdi mdi-cart-outline"></i><span>{{ t.nav_buy_list }}</span></a>
+  <a class="tab-item" href="{{ ingress }}/timeline"><i class="mdi mdi-clock-outline"></i><span>{{ t.timeline }}</span></a>
+  <a class="tab-item" href="{{ ingress }}/stats"><i class="mdi mdi-chart-box"></i><span>{{ t.stats_title }}</span></a>
+</nav>
+
+<script>
+const INGRESS = "{{ ingress }}";
+function toggleNavMenu(e){ if(e) e.stopPropagation(); document.getElementById('navMenu').classList.toggle('open'); }
+function blSelectTab(tab){
+  document.querySelectorAll('.bl-tab').forEach(function(b){ b.classList.toggle('active', b.dataset.tab===tab); });
+  document.getElementById('blPanelWishlist').style.display = (tab==='wishlist') ? '' : 'none';
+  document.getElementById('blPanelOutOfStock').style.display = (tab==='out-of-stock') ? '' : 'none';
+}
+</script>
+{% include "_buy_list_modals.html" %}
+</body>
+</html>

@@ -42,3 +42,32 @@ class TestTranslations:
         for lang in ("de", "en", "fr", "it", "es", "pt", "nl"):
             for key in keys:
                 assert key in translations.TRANSLATIONS[lang], f"{key} missing in {lang}"
+
+
+class TestBuyListPage:
+    def test_page_loads(self, client):
+        resp = client.get("/buy-list")
+        assert resp.status_code == 200
+
+    def test_page_has_both_tabs(self, client):
+        resp = client.get("/buy-list")
+        assert b'data-tab="wishlist"' in resp.data
+        assert b'data-tab="out-of-stock"' in resp.data
+
+    def test_out_of_stock_lists_only_zero_qty(self, client, db):
+        db.execute(
+            "INSERT INTO wines (name, quantity, type, bottle_format) VALUES (?,?,?,?)",
+            ("EmptyWine", 0, "Rotwein", 0.75),
+        )
+        db.execute(
+            "INSERT INTO wines (name, quantity, type, bottle_format) VALUES (?,?,?,?)",
+            ("StockedWine", 3, "Rotwein", 0.75),
+        )
+        db.commit()
+        resp = client.get("/buy-list")
+        assert b"EmptyWine" in resp.data
+        assert b"StockedWine" not in resp.data
+
+    def test_nav_link_present_on_cellar(self, client):
+        resp = client.get("/")
+        assert b'href="' in resp.data and b'/buy-list' in resp.data
