@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.13.0
+
+- **Buy List** - added a wishlist-style buy list for wines you want to purchase, with AI/Vivino/manual entry through the existing wine modal and editable wishlist details.
+- **Out-of-stock view** - added a dedicated out-of-stock tab and cellar filter for zero-quantity wines, with read-only detail viewing and quick rebuy actions.
+- **Move wishlist items to the cellar** - wishlist entries can be moved into the cellar as new wines or merged into matching existing wines, preserving enrichment data and timeline history.
+- **Readonly polish** - buy-list write controls now follow readonly permissions, and wishlist image deletion now persists correctly.
+- **Tests** - added 29 tests covering buy-list schema, routes, image handling, modal wiring, out-of-stock behavior, and move/rebuy flows.
+
 ## 1.12.0
 
 - **Extended read-only REST API** - new JSON endpoints for Home Assistant dashboards & automations: `/api/stats` (totals, liters, value, average age/rating, breakdowns by type/region/grape/decade), `/api/drink-window` (wines bucketed ready / too young / past peak, with year-boundary counts for notifications), `/api/wines` (the filterable, sortable collection) and `/api/wines/<id>` (single-wine detail). All use English wine-type labels regardless of UI language. The existing `/api/summary` is unchanged. Resolves the "Extended REST API" roadmap item.

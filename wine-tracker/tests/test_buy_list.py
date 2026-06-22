@@ -78,6 +78,28 @@ class TestBuyListPage:
         resp = client.get("/")
         assert b'href="/buy-list"' in resp.data
 
+    def test_readonly_hides_write_controls(self, client, db, monkeypatch):
+        import app as wine_app
+        monkeypatch.setattr(wine_app, "AUTH_ENABLED", True)
+        with client.session_transaction() as s:
+            s["user"] = "viewer"
+            s["role"] = "readonly"
+        db.execute(
+            "INSERT INTO buy_list (name, desired_qty) VALUES (?, ?)",
+            ("Readonly Wishlist", 1),
+        )
+        db.execute(
+            "INSERT INTO wines (name, quantity, type, bottle_format) VALUES (?,?,?,?)",
+            ("Readonly Empty", 0, "Rotwein", 0.75),
+        )
+        db.commit()
+        resp = client.get("/buy-list")
+        assert resp.status_code == 200
+        assert b"openWineModal(null, null, { target: 'buy_list' })" not in resp.data
+        assert b"onclick='openMoveToCellar(" not in resp.data
+        assert b'onclick="removeWishlistItem(' not in resp.data
+        assert b'onclick="rebuyWine(' not in resp.data
+
 
 class TestBuyListAdd:
     def test_add_minimal(self, client, db):
@@ -205,6 +227,27 @@ class TestBuyListEditImage:
         # shared.jpg must still exist because SharedWine2 still references it.
         assert os.path.exists(shared_path), "Shared image must not be deleted while still referenced"
 
+    def test_edit_delete_image_clears_reference_and_file(self, client, db, upload_dir):
+        resp = client.post(
+            "/buy-list/add",
+            data={"name": "delete-img", "desired_qty": "1", "image": _jpeg_upload("a.jpg")},
+            headers=AJAX,
+        )
+        item_id = json.loads(resp.data)["id"]
+        old_image = db.execute("SELECT image FROM buy_list WHERE id=?", (item_id,)).fetchone()["image"]
+        old_path = os.path.join(upload_dir, old_image)
+        assert os.path.exists(old_path)
+
+        resp2 = client.post(
+            f"/buy-list/edit/{item_id}",
+            data={"name": "delete-img", "desired_qty": "1", "delete_image": "1"},
+            headers=AJAX,
+        )
+        assert json.loads(resp2.data)["ok"] is True
+        row = db.execute("SELECT image FROM buy_list WHERE id=?", (item_id,)).fetchone()
+        assert row["image"] is None
+        assert not os.path.exists(old_path)
+
     def test_edit_missing_item_404(self, client):
         resp = client.post("/buy-list/edit/99999", data={"name": "x"}, headers=AJAX)
         assert resp.status_code == 404
@@ -312,7 +355,7 @@ class TestWishlistModal:
         resp = client.get("/buy-list")
         assert b'id="wineModal"' in resp.data             # cellar add/edit modal included
         assert b'function submitToWishlist' in resp.data  # the "Add to Wishlist" action
-        assert b'openWineModal(' in resp.data             # + Add opens the shared modal
+        assert b"openWineModal(null, null, { target: 'buy_list' })" in resp.data
 
     def test_wishlist_detail_is_editable(self, client):
         """Wishlist rows open the detail view whose Edit targets the buy list."""

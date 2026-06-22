@@ -198,17 +198,17 @@ function openWineModal(id, wine, opts) {
 
   // Title & button text
   document.getElementById('wineModalTitle').textContent = isEdit ? T.modal_edit_title : T.modal_add_title;
-  document.getElementById('wineSubmitBtn').textContent = isEdit ? T.btn_save_changes : (T.btn_add_to_cellar || T.btn_save);
+  document.getElementById('wineSubmitBtn').textContent = isEdit ? T.btn_save_changes : (target === 'buy_list' ? T.btn_add_to_wishlist : (T.btn_add_to_cellar || T.btn_save));
 
   // Secondary "Add to wishlist" button only applies to new wines
   var wlBtn = document.getElementById('wineSubmitWishlistBtn');
-  if (wlBtn) wlBtn.style.display = isEdit ? 'none' : '';
+  if (wlBtn) wlBtn.style.display = (isEdit || target === 'buy_list') ? 'none' : '';
 
   // Form action (wishlist edits target /buy-list/edit; for adds the wishlist button overrides)
   if (isEdit) {
     form.action = target === 'buy_list' ? INGRESS + '/buy-list/edit/' + id : INGRESS + '/edit/' + id;
   } else {
-    form.action = INGRESS + '/add';
+    form.action = target === 'buy_list' ? INGRESS + '/buy-list/add' : INGRESS + '/add';
   }
 
   // Reset file input & hidden fields

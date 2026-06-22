@@ -36,7 +36,9 @@
   </div>
 
   <section id="blPanelWishlist" class="bl-panel">
-    <button class="btn-primary" onclick="openWineModal()"><i class="mdi mdi-plus"></i> {{ t.btn_add_to_wishlist }}</button>
+    {% if not auth_readonly %}
+    <button class="btn-primary" onclick="openWineModal(null, null, { target: 'buy_list' })"><i class="mdi mdi-plus"></i> {{ t.btn_add_to_wishlist }}</button>
+    {% endif %}
     {% if items %}
     <div class="bl-grid">
       {% for it in items %}
@@ -47,10 +49,12 @@
           <div class="bl-meta">{{ it.region or '' }}{% if it.grape %} - {{ it.grape }}{% endif %}</div>
           <div class="bl-meta">{% if it.price %}{{ it.price }} {{ currency }}{% endif %} - {{ t.label_desired_qty }}: {{ it.desired_qty }}</div>
         </div>
+        {% if not auth_readonly %}
         <div class="bl-actions">
           <button class="btn-small" onclick='openMoveToCellar({{ it|tojson }})'>{{ t.btn_move_to_cellar }}</button>
           <button class="btn-small btn-danger" onclick="removeWishlistItem({{ it.id }})"><i class="mdi mdi-close"></i></button>
         </div>
+        {% endif %}
       </div>
       {% endfor %}
     </div>
@@ -69,9 +73,11 @@
           <div class="bl-name">{{ w.name }}{% if w.year %} ({{ w.year }}){% endif %}</div>
           <div class="bl-meta">{{ w.region or '' }}{% if w.grape %} - {{ w.grape }}{% endif %}</div>
         </div>
-        <div class="bl-actions">
-          <button class="btn-small" onclick="rebuyWine({{ w.id }}, this)"><i class="mdi mdi-cart-plus"></i> {{ t.btn_rebuy }}</button>
-        </div>
+        {% if not auth_readonly %}
+          <div class="bl-actions">
+            <button class="btn-small" onclick="rebuyWine({{ w.id }}, this)"><i class="mdi mdi-cart-plus"></i> {{ t.btn_rebuy }}</button>
+          </div>
+        {% endif %}
       </div>
       {% endfor %}
     </div>
