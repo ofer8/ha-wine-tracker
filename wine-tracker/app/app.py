@@ -803,6 +803,66 @@ def buy_list_page():
     return render_template("buy_list.html", items=items, out_of_stock=out_of_stock)
 
 
+def _buy_list_form_values():
+    """Pull the buy_list field values out of request.form (+ image)."""
+    name = request.form.get("name", "").strip()
+    bottle_format_raw = request.form.get("bottle_format", "").strip()
+    price_raw = request.form.get("price", "").strip()
+    image = save_image(request.files.get("image"))
+    if not image:
+        ai_img = request.form.get("ai_image", "").strip()
+        if ai_img and os.path.isfile(os.path.join(UPLOAD_DIR, ai_img)):
+            image = ai_img
+    return {
+        "name": name,
+        "year": request.form.get("year") or None,
+        "type": request.form.get("type") or None,
+        "region": request.form.get("region", "").strip() or None,
+        "grape": request.form.get("grape", "").strip() or None,
+        "price": float(price_raw) if price_raw else None,
+        "notes": request.form.get("notes", "").strip() or None,
+        "image": image,
+        "bottle_format": float(bottle_format_raw) if bottle_format_raw else 0.75,
+        "desired_qty": int(request.form.get("desired_qty", 1) or 1),
+        "drink_from": request.form.get("drink_from") or None,
+        "drink_until": request.form.get("drink_until") or None,
+        "maturity_data": request.form.get("maturity_data", "").strip() or None,
+        "taste_profile": request.form.get("taste_profile", "").strip() or None,
+        "food_pairings": request.form.get("food_pairings", "").strip() or None,
+    }
+
+
+def _insert_buy_list(db, vals):
+    cur = db.execute(
+        """INSERT INTO buy_list
+           (name, year, type, region, grape, price, notes, image, bottle_format,
+            desired_qty, added_at, drink_from, drink_until,
+            maturity_data, taste_profile, food_pairings)
+           VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+        (
+            vals["name"], vals["year"], vals["type"], vals["region"], vals["grape"],
+            vals["price"], vals["notes"], vals["image"], vals["bottle_format"],
+            vals["desired_qty"], datetime.now().isoformat(),
+            vals["drink_from"], vals["drink_until"],
+            vals["maturity_data"], vals["taste_profile"], vals["food_pairings"],
+        ),
+    )
+    db.commit()
+    return cur.lastrowid
+
+
+@app.route("/buy-list/add", methods=["POST"])
+def buy_list_add():
+    db = get_db()
+    vals = _buy_list_form_values()
+    if not vals["name"]:
+        return jsonify({"ok": False, "error": "name_required"}), 400
+    new_id = _insert_buy_list(db, vals)
+    if is_ajax():
+        return jsonify({"ok": True, "id": new_id})
+    return ingress_redirect("buy_list_page")
+
+
 def _normalize_duplicate_name(value):
     """Normalize AI/user label text enough for duplicate-name comparison."""
     folded = unicodedata.normalize("NFKD", value or "")

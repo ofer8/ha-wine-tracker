@@ -71,3 +71,29 @@ class TestBuyListPage:
     def test_nav_link_present_on_cellar(self, client):
         resp = client.get("/")
         assert b'href="/buy-list"' in resp.data
+
+
+class TestBuyListAdd:
+    def test_add_minimal(self, client, db):
+        resp = client.post("/buy-list/add", data={"name": "Wishlist Wine", "desired_qty": "2"}, headers=AJAX)
+        assert resp.status_code == 200
+        body = json.loads(resp.data)
+        assert body["ok"] is True
+        row = db.execute("SELECT name, desired_qty FROM buy_list WHERE id=?", (body["id"],)).fetchone()
+        assert row[0] == "Wishlist Wine"
+        assert row[1] == 2
+
+    def test_add_carries_enrichment(self, client, db):
+        resp = client.post("/buy-list/add", data={
+            "name": "AI Wine", "year": "2019", "type": "Rotwein",
+            "maturity_data": '{"peak": [2025, 2030]}',
+            "food_pairings": '["Steak"]',
+        }, headers=AJAX)
+        body = json.loads(resp.data)
+        row = db.execute("SELECT maturity_data, food_pairings FROM buy_list WHERE id=?", (body["id"],)).fetchone()
+        assert row[0] == '{"peak": [2025, 2030]}'
+        assert row[1] == '["Steak"]'
+
+    def test_add_requires_name(self, client):
+        resp = client.post("/buy-list/add", data={"desired_qty": "1"}, headers=AJAX)
+        assert resp.status_code == 400
