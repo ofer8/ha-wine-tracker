@@ -37,7 +37,7 @@ A Home Assistant add-on, **Wine Tracker** — a Flask web app (server-rendered J
 - The add-on version is `version:` in `wine-tracker/config.yaml` — **this is the only field Home Assistant uses to decide an update is available.** Changing code without bumping it ships nothing to users.
 - That version string is duplicated in several files that must stay in sync: `wine-tracker/config.yaml`, `wine-tracker/app/app.py` (`APP_VERSION`), `wine-tracker/tests/test_routes.py` (assertion), the version badges in `README.md`, `wine-tracker/README.md`, `wine-tracker/DOCS.md`, and `docs/llms.txt`.
 - Cut releases with `scripts/deploy.sh vX.Y.Z`. It runs tests, bumps every version file, reads a **pre-written** `## X.Y.Z` section from `CHANGELOG.md` (add it first — the script will not generate it), mirrors `CHANGELOG.md` → `wine-tracker/CHANGELOG.md`, commits `Release vX.Y.Z`, tags, pushes, and creates a GitHub Release. The `v*` tag is what triggers the CI image build.
-- The version bump must land on the repository's **default branch** (currently `master`) — that is the branch Home Assistant tracks.
+- The version bump must land on `main`, the repository's **default branch** and the branch Home Assistant tracks.
 
 ## Home Assistant update flow
 
