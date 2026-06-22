@@ -302,6 +302,7 @@ sensor:
       - total_liters
       - total_value
       - avg_age
+      - avg_rating
       - by_type
     scan_interval: 3600
 ```
@@ -344,7 +345,7 @@ automation:
 
 MIT
 
-[version-badge]: https://img.shields.io/badge/version-v1.11.0-blue.svg
+[version-badge]: https://img.shields.io/badge/version-v1.12.0-blue.svg
 [stage-badge]: https://img.shields.io/badge/project%20stage-stable-brightgreen.svg
 [maintained-badge]: https://img.shields.io/badge/maintained-yes-brightgreen.svg
 [license-badge]: https://img.shields.io/badge/license-MIT-green.svg
