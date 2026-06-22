@@ -909,10 +909,12 @@ No tests — the deliverable is documentation and a synchronized version bump.
 
 **Files:**
 - Modify: `README.md` (the "Home Assistant Sensor (Optional)" section, ~line 278)
-- Modify: `CHANGELOG.md` (add `## 1.11.0` at top, under `# Changelog`)
+- Modify: `CHANGELOG.md` (add `## 1.12.0` at top, under `# Changelog`)
 - Modify: `wine-tracker/CHANGELOG.md` (identical content — keep the two in sync)
-- Modify: `wine-tracker/config.yaml:3` (`version: "1.10.0"` → `"1.11.0"`)
-- Modify: `wine-tracker/app/app.py:146` (`APP_VERSION = "1.10.0"` → `"1.11.0"`)
+- Modify: `wine-tracker/config.yaml:3` (`version: "1.11.0"` → `"1.12.0"`)
+- Modify: `wine-tracker/app/app.py:146` (`APP_VERSION = "1.11.0"` → `"1.12.0"`)
+
+> **Note:** `origin/main` already shipped `1.11.0` (duplicate detection, `/api/summary` English types, etc.) — that version is taken. These new endpoints are a minor feature, so they bump to **`1.12.0`**, and the new CHANGELOG block goes **above** the existing `## 1.11.0` section.
 
 - [ ] **Step 1: Expand the README "Home Assistant Sensor" section**
 
@@ -985,10 +987,10 @@ automation:
 
 - [ ] **Step 2: Add the CHANGELOG entry (both files, identical)**
 
-In **both** `CHANGELOG.md` and `wine-tracker/CHANGELOG.md`, insert this block between `# Changelog` and `## 1.10.0`:
+In **both** `CHANGELOG.md` and `wine-tracker/CHANGELOG.md`, insert this block between `# Changelog` and the existing `## 1.11.0`:
 
 ```markdown
-## 1.11.0
+## 1.12.0
 
 - **Extended read-only REST API** - new JSON endpoints for Home Assistant dashboards & automations: `/api/stats` (totals, liters, value, average age/rating, breakdowns by type/region/grape/decade), `/api/drink-window` (wines bucketed ready / too young / past peak, with year-boundary counts for notifications), `/api/wines` (the filterable, sortable collection) and `/api/wines/<id>` (single-wine detail). All use English wine-type labels regardless of UI language. The existing `/api/summary` is unchanged. Resolves the "Extended REST API" roadmap item.
 - **Tests** - added 30 tests for the new API query helpers and routes.
@@ -999,19 +1001,19 @@ In **both** `CHANGELOG.md` and `wine-tracker/CHANGELOG.md`, insert this block be
 In `wine-tracker/config.yaml` line 3:
 
 ```yaml
-version: "1.11.0"
+version: "1.12.0"
 ```
 
 In `wine-tracker/app/app.py` line 146:
 
 ```python
-APP_VERSION = "1.11.0"
+APP_VERSION = "1.12.0"
 ```
 
 - [ ] **Step 4: Verify versions are consistent**
 
-Run: `cd /Users/ofer/conductor/workspaces/ha-wine-tracker/cairo && grep -rn "1.11.0" wine-tracker/config.yaml wine-tracker/app/app.py CHANGELOG.md wine-tracker/CHANGELOG.md`
-Expected: one match in each file (two in app.py is fine only if APP_VERSION is the only literal — confirm it's the version line).
+Run: `cd /Users/ofer/conductor/workspaces/ha-wine-tracker/cairo && grep -rn "1.12.0" wine-tracker/config.yaml wine-tracker/app/app.py CHANGELOG.md wine-tracker/CHANGELOG.md`
+Expected: one match in each of the four files (the `version:`/`APP_VERSION` lines and the new `## 1.12.0` CHANGELOG headings). The pre-existing `## 1.11.0` sections remain below.
 
 - [ ] **Step 5: Run the full suite once more**
 
@@ -1022,7 +1024,7 @@ Expected: PASS (full suite green — the version-string change must not break th
 
 ```bash
 git add README.md CHANGELOG.md wine-tracker/CHANGELOG.md wine-tracker/config.yaml wine-tracker/app/app.py
-git commit -m "Document HA REST API and bump version to 1.11.0
+git commit -m "Document HA REST API and bump version to 1.12.0
 
 Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>"
 ```
