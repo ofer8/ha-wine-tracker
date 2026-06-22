@@ -671,7 +671,8 @@ class TestApiSummary:
         data = json.loads(resp.data)
         assert data["total_bottles"] == 3
         assert len(data["by_type"]) == 1
-        assert data["by_type"][0]["type"] == "Rotwein"
+        # by_type uses English labels for HA sensors, regardless of UI language
+        assert data["by_type"][0]["type"] == "Red Wine"
 
     def test_multiple_types(self, client):
         client.post("/add", data={"name": "Red", "type": "Rotwein", "quantity": "2"}, headers=AJAX)
@@ -680,6 +681,8 @@ class TestApiSummary:
         data = json.loads(resp.data)
         assert data["total_bottles"] == 5
         assert len(data["by_type"]) == 2
+        types = {row["type"] for row in data["by_type"]}
+        assert types == {"Red Wine", "White Wine"}
 
 
 # ── GET /timeline ─────────────────────────────────────────────────────────────
