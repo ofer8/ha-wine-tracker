@@ -84,13 +84,15 @@ function closeWishlistModal() { document.getElementById('wishlistModal').style.d
 
 function blScanLabel(file) {
   if (!file) return;
-  document.getElementById('blScanLoading').style.display = '';
+  var loadingEl = document.getElementById('blScanLoading');
+  function _setLoading(v){ if (loadingEl) loadingEl.style.display = v; }
+  _setLoading('');
   const fd = new FormData();
   fd.append('image', file);
   fetch(INGRESS + '/api/analyze-wine', { method: 'POST', body: fd, headers: { 'X-Requested-With': 'XMLHttpRequest' } })
     .then(function(r){ return r.json(); })
     .then(function(data){
-      document.getElementById('blScanLoading').style.display = 'none';
+      _setLoading('none');
       if (!data.ok) { if (data.image_filename) document.getElementById('blAiImage').value = data.image_filename; return; }
       const f = data.fields || {};
       if (f.name) document.getElementById('blName').value = f.name;
@@ -107,7 +109,7 @@ function blScanLabel(file) {
       if (f.food_pairings) document.getElementById('blPairings').value = JSON.stringify(f.food_pairings);
       if (data.image_filename) document.getElementById('blAiImage').value = data.image_filename;
     })
-    .catch(function(){ document.getElementById('blScanLoading').style.display = 'none'; });
+    .catch(function(){ _setLoading('none'); });
 }
 
 function submitWishlist(e) {
