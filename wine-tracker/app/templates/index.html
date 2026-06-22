@@ -17,6 +17,7 @@
   <a class="nav-brand" href="{{ ingress }}/"><img src="{{ ingress }}/static/logo.png" alt="Wine Tracker" class="nav-logo"></a>
   <nav class="nav-links">
     <a class="nav-link active" href="{{ ingress }}/">{{ t.nav_cellar }}</a>
+    <a class="nav-link" href="{{ ingress }}/buy-list">{{ t.nav_buy_list }}</a>
     {% if ai_enabled %}<a class="nav-link" href="#" id="chatFab" onclick="event.preventDefault();toggleChatPanel()">{{ t.chat_title }}</a>{% endif %}
     <a class="nav-link" href="{{ ingress }}/timeline">{{ t.timeline }}</a>
     <a class="nav-link" href="{{ ingress }}/stats">{{ t.stats_title }}</a>
@@ -24,6 +25,7 @@
   <button class="nav-hamburger" onclick="toggleNavMenu(event)" aria-label="Menu"><i class="mdi mdi-menu"></i></button>
   <div class="nav-menu" id="navMenu">
     <a href="{{ ingress }}/" class="nav-menu-item active">{{ t.nav_cellar }}</a>
+    <a href="{{ ingress }}/buy-list" class="nav-menu-item">{{ t.nav_buy_list }}</a>
     {% if ai_enabled %}<a href="#" class="nav-menu-item" onclick="event.preventDefault();toggleNavMenu();toggleChatPanel()">{{ t.chat_title }}</a>{% endif %}
     <a href="{{ ingress }}/timeline" class="nav-menu-item">{{ t.timeline }}</a>
     <a href="{{ ingress }}/stats" class="nav-menu-item">{{ t.stats_title }}</a>
@@ -56,6 +58,10 @@
         </label>
         {% endfor %}
       </div>
+      <hr class="filter-divider">
+      <label class="filter-option" data-special="oos">
+        <input type="checkbox" id="oosFilter" onchange="filterOutOfStock(this.checked)"> {{ t.tab_out_of_stock }}
+      </label>
       <div id="filterDrinkWindowSection" style="display:none">
         <hr class="filter-divider">
         <div class="filter-section-title">{{ t.filter_title_dw }}</div>
@@ -424,6 +430,7 @@ function syncTableVisibility() {
 var activeType = '';
 var activeDrinkWindow = '';
 var showEmpty = false;
+var oosOnly = false;
 var _filterTimer = null;
 
 function debouncedFilter() {
@@ -464,12 +471,13 @@ function applyFilters() {
         dwOk = until < year;
       }
     }
-    // Empty match
+    // Stock match: out-of-stock filter shows only quantity 0; otherwise honor showEmpty
     var emptyOk = showEmpty || parseInt(d.quantity) > 0;
+    var stockOk = oosOnly ? parseInt(d.quantity) === 0 : emptyOk;
     // Advanced filter (AND-combined with the popover filter above)
     var advOk = !window.AdvancedFilter || window.AdvancedFilter.evaluate(d);
 
-    var visible = typeOk && searchOk && dwOk && emptyOk && advOk;
+    var visible = typeOk && searchOk && dwOk && stockOk && advOk;
     card.style.display = visible ? '' : 'none';
     if (visible) bottleVisibleCount += parseInt(d.quantity) || 0;
     if (visible) wineVisibleCount++;
@@ -534,8 +542,9 @@ function updateTabCounts() {
       else if (activeDrinkWindow === 'past') { dwOk = until < year; }
     }
     var emptyOk = showEmpty || parseInt(d.quantity) > 0;
+    var stockOk = oosOnly ? parseInt(d.quantity) === 0 : emptyOk;
     var advOk = !window.AdvancedFilter || window.AdvancedFilter.evaluate(d);
-    if (searchOk && dwOk && emptyOk && advOk) {
+    if (searchOk && dwOk && stockOk && advOk) {
       total++;
       var t = d.type || '';
       counts[t] = (counts[t] || 0) + 1;
@@ -576,8 +585,9 @@ function updateTabCounts() {
       (d.notes || '').toLowerCase().indexOf(query) !== -1;
     var typeOk = !activeType || d.type === activeType;
     var emptyOk = showEmpty || parseInt(d.quantity) > 0;
+    var stockOk = oosOnly ? parseInt(d.quantity) === 0 : emptyOk;
     var advOk = !window.AdvancedFilter || window.AdvancedFilter.evaluate(d);
-    if (!(searchOk && typeOk && emptyOk && advOk)) return;
+    if (!(searchOk && typeOk && stockOk && advOk)) return;
     dwCounts['']++;
     var until = parseInt(d.drink_until);
     if (!until) return;
@@ -618,6 +628,13 @@ function filterByDrinkWindow(val) {
   opts.forEach(function(opt) {
     opt.classList.toggle('active', (opt.dataset.dw || '') === val);
   });
+  applyFilters();
+}
+
+function filterOutOfStock(checked) {
+  oosOnly = !!checked;
+  var opt = document.querySelector('.filter-option[data-special="oos"]');
+  if (opt) opt.classList.toggle('active', oosOnly);
   applyFilters();
 }
 
@@ -959,7 +976,7 @@ function openViewModal(id, wine) {
 
   // Meta: year + region
   var meta = [];
-  if (w.year) meta.push('<span>' + w.year + '</span>');
+  if (w.year) meta.push('<span>' + escapeHtml(w.year) + '</span>');
   if (w.region) meta.push('<span>' + escapeHtml(w.region) + '</span>');
   if (meta.length) html += '<div class="view-meta">' + meta.join('') + '</div>';
 
@@ -1004,7 +1021,7 @@ function openViewModal(id, wine) {
   if (w.location) details += viewRow('mdi-map-marker', T.label_location || 'Location', w.location);
 
   // Vivino link
-  if (w.vivino_id) {
+  if (w.vivino_id && /^[0-9]+$/.test(String(w.vivino_id))) {
     details += '<div class="view-row"><i class="mdi mdi-open-in-new"></i>'
              + '<span class="view-label">Vivino</span>'
              + '<a href="https://www.vivino.com/w/' + w.vivino_id + '" target="_blank" rel="noopener" class="view-vivino-link view-value">vivino.com</a></div>';
@@ -1125,10 +1142,9 @@ function wineIcon(type) {
 }
 
 function escapeHtml(s) {
-  if (!s) return '';
-  var d = document.createElement('div');
-  d.appendChild(document.createTextNode(s));
-  return d.innerHTML;
+  return String(s == null ? '' : s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
 
 function renderCard(w) {
@@ -1474,6 +1490,7 @@ initImageShimmer();
   <a class="tab-item active" href="{{ ingress }}/">
     <i class="mdi mdi-bottle-wine"></i><span>{{ t.nav_cellar }}</span>
   </a>
+  <a class="tab-item" href="{{ ingress }}/buy-list"><i class="mdi mdi-cart-outline"></i><span>{{ t.nav_buy_list }}</span></a>
   {% if ai_enabled %}
   <a class="tab-item" href="{{ ingress }}/chat">
     <i class="mdi mdi-chat"></i><span>{{ t.chat_title }}</span>

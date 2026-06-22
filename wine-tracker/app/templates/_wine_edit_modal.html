@@ -142,6 +142,7 @@
               </button>
             </div>
           </div>
+          <button type="button" class="btn-secondary" id="wineSubmitWishlistBtn" onclick="submitToWishlist()">{{ t.btn_add_to_wishlist }}</button>
           <button type="submit" class="btn-submit" id="wineSubmitBtn">{{ t.btn_save }}</button>
         </div>
         </div><!-- /form-fields-panel -->
@@ -187,7 +188,9 @@ var _placeholders = {};
   if (el) _placeholders[id] = el.placeholder || '';
 });
 
-function openWineModal(id, wine) {
+function openWineModal(id, wine, opts) {
+  opts = opts || {};
+  var target = opts.target || 'cellar';  // 'cellar' | 'buy_list'
   _reloadMode = false;
   var isEdit = !!id;
   var form = document.getElementById('wineForm');
@@ -195,10 +198,18 @@ function openWineModal(id, wine) {
 
   // Title & button text
   document.getElementById('wineModalTitle').textContent = isEdit ? T.modal_edit_title : T.modal_add_title;
-  document.getElementById('wineSubmitBtn').textContent = isEdit ? T.btn_save_changes : T.btn_save;
+  document.getElementById('wineSubmitBtn').textContent = isEdit ? T.btn_save_changes : (target === 'buy_list' ? T.btn_add_to_wishlist : (T.btn_add_to_cellar || T.btn_save));
 
-  // Form action
-  form.action = isEdit ? INGRESS + '/edit/' + id : INGRESS + '/add';
+  // Secondary "Add to wishlist" button only applies to new wines
+  var wlBtn = document.getElementById('wineSubmitWishlistBtn');
+  if (wlBtn) wlBtn.style.display = (isEdit || target === 'buy_list') ? 'none' : '';
+
+  // Form action (wishlist edits target /buy-list/edit; for adds the wishlist button overrides)
+  if (isEdit) {
+    form.action = target === 'buy_list' ? INGRESS + '/buy-list/edit/' + id : INGRESS + '/edit/' + id;
+  } else {
+    form.action = target === 'buy_list' ? INGRESS + '/buy-list/add' : INGRESS + '/add';
+  }
 
   // Reset file input & hidden fields
   var fileInput = preview.querySelector('input[type=file]');
@@ -860,6 +871,25 @@ document.getElementById('wineForm').addEventListener('submit', function(e) {
   var form = this;
   submitWineForm(form, null);
 });
+
+// Add the current form's wine to the buy list instead of the cellar.
+// Uses its own fetch (not submitWineForm) so the cellar page's _onWineSaved
+// grid hook never runs for a wishlist add.
+function submitToWishlist() {
+  var form = document.getElementById('wineForm');
+  var fd = new FormData(form);
+  fetch(INGRESS + '/buy-list/add', {
+    method: 'POST', body: fd,
+    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
+    if (!data.ok) { alert((window.T && T.error_generic) || 'Error'); return; }
+    closeModal('wineModal');
+    window.location = INGRESS + '/buy-list';
+  })
+  .catch(function() { alert((window.T && T.error_generic) || 'Error'); });
+}
 
 function submitWineForm(form, dupAction, targetId) {
   var fd = new FormData(form);

@@ -17,6 +17,7 @@
   <a class="nav-brand" href="{{ ingress }}/"><img src="{{ ingress }}/static/logo.png" alt="Wine Tracker" class="nav-logo"></a>
   <nav class="nav-links">
     <a class="nav-link" href="{{ ingress }}/">{{ t.nav_cellar }}</a>
+    <a class="nav-link" href="{{ ingress }}/buy-list">{{ t.nav_buy_list }}</a>
     {% if ai_enabled %}<a class="nav-link" href="#" id="chatFab" onclick="event.preventDefault();toggleChatPanel()">{{ t.chat_title }}</a>{% endif %}
     <a class="nav-link" href="{{ ingress }}/timeline">{{ t.timeline }}</a>
     <a class="nav-link active" href="{{ ingress }}/stats">{{ t.stats_title }}</a>
@@ -24,6 +25,7 @@
   <button class="nav-hamburger" onclick="toggleNavMenu(event)" aria-label="Menu"><i class="mdi mdi-menu"></i></button>
   <div class="nav-menu" id="navMenu">
     <a href="{{ ingress }}/" class="nav-menu-item">{{ t.nav_cellar }}</a>
+    <a href="{{ ingress }}/buy-list" class="nav-menu-item">{{ t.nav_buy_list }}</a>
     {% if ai_enabled %}<a href="#" class="nav-menu-item" onclick="event.preventDefault();toggleNavMenu();toggleChatPanel()">{{ t.chat_title }}</a>{% endif %}
     <a href="{{ ingress }}/timeline" class="nav-menu-item">{{ t.timeline }}</a>
     <a href="{{ ingress }}/stats" class="nav-menu-item active">{{ t.stats_title }}</a>
@@ -952,6 +954,7 @@ initGlobe();
   <a class="tab-item" href="{{ ingress }}/">
     <i class="mdi mdi-bottle-wine"></i><span>{{ t.nav_cellar }}</span>
   </a>
+  <a class="tab-item" href="{{ ingress }}/buy-list"><i class="mdi mdi-cart-outline"></i><span>{{ t.nav_buy_list }}</span></a>
   {% if ai_enabled %}
   <a class="tab-item" href="{{ ingress }}/chat">
     <i class="mdi mdi-chat"></i><span>{{ t.chat_title }}</span>

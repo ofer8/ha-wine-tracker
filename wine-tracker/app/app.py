@@ -144,7 +144,7 @@ def _ssl_verify():
         return True
 
 
-APP_VERSION = "1.12.0"
+APP_VERSION = "1.13.0"
 
 HA_OPTIONS = load_options()
 
@@ -568,6 +568,29 @@ def init_db():
             )
         """)
 
+        # ── buy_list (wishlist) table ─────────────────────────────────────
+        db.execute("""
+            CREATE TABLE IF NOT EXISTS buy_list (
+                id            INTEGER PRIMARY KEY AUTOINCREMENT,
+                name          TEXT NOT NULL,
+                year          INTEGER,
+                type          TEXT,
+                region        TEXT,
+                grape         TEXT,
+                price         REAL,
+                notes         TEXT,
+                image         TEXT,
+                bottle_format REAL DEFAULT 0.75,
+                desired_qty   INTEGER DEFAULT 1,
+                added_at      TEXT,
+                drink_from    INTEGER,
+                drink_until   INTEGER,
+                maturity_data TEXT,
+                taste_profile TEXT,
+                food_pairings TEXT
+            )
+        """)
+
         db.commit()
 
 
@@ -754,6 +777,285 @@ def index():
         show_empty=show_empty,
         stats=stats,
     )
+
+
+def buy_list_row_to_dict(row):
+    return dict(row)
+
+
+def query_out_of_stock(db):
+    rows = db.execute(
+        "SELECT * FROM wines WHERE quantity = 0 ORDER BY type, name, year"
+    ).fetchall()
+    return [dict(r) for r in rows]
+
+
+@app.route("/buy-list")
+def buy_list_page():
+    db = get_db()
+    items = [
+        buy_list_row_to_dict(r)
+        for r in db.execute(
+            "SELECT * FROM buy_list ORDER BY added_at DESC, id DESC"
+        ).fetchall()
+    ]
+    out_of_stock = query_out_of_stock(db)
+    return render_template("buy_list.html", items=items, out_of_stock=out_of_stock)
+
+
+def _buy_list_form_values():
+    """Pull the buy_list field values out of request.form (+ image)."""
+    name = request.form.get("name", "").strip()
+    bottle_format_raw = request.form.get("bottle_format", "").strip()
+    price_raw = request.form.get("price", "").strip()
+    image = save_image(request.files.get("image"))
+    if not image:
+        ai_img = request.form.get("ai_image", "").strip()
+        if ai_img and os.path.isfile(os.path.join(UPLOAD_DIR, ai_img)):
+            image = ai_img
+    return {
+        "name": name,
+        "year": request.form.get("year") or None,
+        "type": request.form.get("type") or None,
+        "region": request.form.get("region", "").strip() or None,
+        "grape": request.form.get("grape", "").strip() or None,
+        "price": float(price_raw) if price_raw else None,
+        "notes": request.form.get("notes", "").strip() or None,
+        "image": image,
+        "bottle_format": float(bottle_format_raw) if bottle_format_raw else 0.75,
+        "desired_qty": int(request.form.get("desired_qty") or request.form.get("quantity") or 1),
+        "drink_from": request.form.get("drink_from") or None,
+        "drink_until": request.form.get("drink_until") or None,
+        "maturity_data": request.form.get("maturity_data", "").strip() or None,
+        "taste_profile": request.form.get("taste_profile", "").strip() or None,
+        "food_pairings": request.form.get("food_pairings", "").strip() or None,
+    }
+
+
+def _insert_buy_list(db, vals):
+    cur = db.execute(
+        """INSERT INTO buy_list
+           (name, year, type, region, grape, price, notes, image, bottle_format,
+            desired_qty, added_at, drink_from, drink_until,
+            maturity_data, taste_profile, food_pairings)
+           VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+        (
+            vals["name"], vals["year"], vals["type"], vals["region"], vals["grape"],
+            vals["price"], vals["notes"], vals["image"], vals["bottle_format"],
+            vals["desired_qty"], datetime.now().isoformat(),
+            vals["drink_from"], vals["drink_until"],
+            vals["maturity_data"], vals["taste_profile"], vals["food_pairings"],
+        ),
+    )
+    db.commit()
+    return cur.lastrowid
+
+
+@app.route("/buy-list/add", methods=["POST"])
+def buy_list_add():
+    db = get_db()
+    vals = _buy_list_form_values()
+    if not vals["name"]:
+        return jsonify({"ok": False, "error": "name_required"}), 400
+    new_id = _insert_buy_list(db, vals)
+    if is_ajax():
+        return jsonify({"ok": True, "id": new_id})
+    return ingress_redirect("buy_list_page")
+
+
+@app.route("/buy-list/edit/<int:item_id>", methods=["POST"])
+def buy_list_edit(item_id):
+    db = get_db()
+    item = db.execute("SELECT * FROM buy_list WHERE id=?", (item_id,)).fetchone()
+    if not item:
+        return jsonify({"ok": False, "error": "not_found"}), 404
+    vals = _buy_list_form_values()
+    if not vals["name"]:
+        return jsonify({"ok": False, "error": "name_required"}), 400
+    image = item["image"]
+    if request.form.get("delete_image") == "1":
+        _delete_buy_list_image_if_unused(db, item["image"], item_id)
+        image = None
+    if vals["image"]:
+        if image and vals["image"] != image:
+            _delete_buy_list_image_if_unused(db, image, item_id)
+        image = vals["image"]
+    db.execute(
+        """UPDATE buy_list SET name=?, year=?, type=?, region=?, grape=?, price=?,
+           notes=?, image=?, bottle_format=?, desired_qty=?,
+           drink_from=?, drink_until=?, maturity_data=?, taste_profile=?, food_pairings=?
+           WHERE id=?""",
+        (
+            vals["name"], vals["year"], vals["type"], vals["region"], vals["grape"],
+            vals["price"], vals["notes"], image, vals["bottle_format"], vals["desired_qty"],
+            vals["drink_from"], vals["drink_until"],
+            vals["maturity_data"], vals["taste_profile"], vals["food_pairings"],
+            item_id,
+        ),
+    )
+    db.commit()
+    if is_ajax():
+        return jsonify({"ok": True})
+    return ingress_redirect("buy_list_page")
+
+
+def _delete_buy_list_image_if_unused(db, image, exclude_item_id):
+    """Remove an image file only if no wine and no other buy_list row references it."""
+    if not image:
+        return
+    in_wines = db.execute("SELECT COUNT(*) FROM wines WHERE image=?", (image,)).fetchone()[0]
+    in_buy = db.execute(
+        "SELECT COUNT(*) FROM buy_list WHERE image=? AND id!=?", (image, exclude_item_id)
+    ).fetchone()[0]
+    if in_wines == 0 and in_buy == 0:
+        try:
+            os.remove(os.path.join(UPLOAD_DIR, image))
+        except FileNotFoundError:
+            pass
+
+
+@app.route("/buy-list/delete/<int:item_id>", methods=["POST"])
+def buy_list_delete(item_id):
+    db = get_db()
+    item = db.execute("SELECT image FROM buy_list WHERE id=?", (item_id,)).fetchone()
+    if item:
+        _delete_buy_list_image_if_unused(db, item["image"], item_id)
+        db.execute("DELETE FROM buy_list WHERE id=?", (item_id,))
+        db.commit()
+    if is_ajax():
+        return jsonify({"ok": True})
+    return ingress_redirect("buy_list_page")
+
+
+def _copy_image_file(image):
+    """Copy an UPLOAD_DIR image to a fresh filename. Returns new name or None."""
+    if not image:
+        return None
+    src = os.path.join(UPLOAD_DIR, image)
+    if not os.path.exists(src):
+        return None
+    ext = image.rsplit(".", 1)[-1].lower()
+    new_name = f"{uuid.uuid4().hex}.{ext}"
+    shutil.copy2(src, os.path.join(UPLOAD_DIR, new_name))
+    return new_name
+
+
+@app.route("/buy-list/rebuy/<int:wine_id>", methods=["POST"])
+def buy_list_rebuy(wine_id):
+    db = get_db()
+    wine = db.execute("SELECT * FROM wines WHERE id=?", (wine_id,)).fetchone()
+    if not wine:
+        return jsonify({"ok": False, "error": "not_found"}), 404
+    vals = {
+        "name": wine["name"],
+        "year": wine["year"],
+        "type": wine["type"],
+        "region": wine["region"],
+        "grape": wine["grape"],
+        "price": wine["price"],
+        "notes": wine["notes"],
+        "image": _copy_image_file(wine["image"]),
+        "bottle_format": wine["bottle_format"] if wine["bottle_format"] is not None else 0.75,
+        "desired_qty": 1,
+        "drink_from": wine["drink_from"],
+        "drink_until": wine["drink_until"],
+        "maturity_data": wine["maturity_data"],
+        "taste_profile": wine["taste_profile"],
+        "food_pairings": wine["food_pairings"],
+    }
+    new_id = _insert_buy_list(db, vals)
+    if is_ajax():
+        return jsonify({"ok": True, "id": new_id})
+    return ingress_redirect("buy_list_page")
+
+
+@app.route("/buy-list/move/<int:item_id>", methods=["POST"])
+def buy_list_move(item_id):
+    db = get_db()
+    item = db.execute("SELECT * FROM buy_list WHERE id=?", (item_id,)).fetchone()
+    if not item:
+        return jsonify({"ok": False, "error": "not_found"}), 404
+
+    name = request.form.get("name", item["name"]).strip()
+    year = request.form.get("year") or None
+    wine_type = request.form.get("type") or item["type"]
+    region = request.form.get("region", item["region"] or "").strip() or None
+    grape = request.form.get("grape", item["grape"] or "").strip() or None
+    notes = request.form.get("notes", item["notes"] or "").strip() or None
+    price_raw = request.form.get("price", "").strip()
+    price = float(price_raw) if price_raw else item["price"]
+    bf_raw = request.form.get("bottle_format", "").strip()
+    bottle_format = float(bf_raw) if bf_raw else (item["bottle_format"] or 0.75)
+    qty = int(request.form.get("quantity", item["desired_qty"] or 1) or 1)
+    original_year = request.form.get("original_year") or None
+
+    # Enrichment carried from the wishlist item by default.
+    drink_from = item["drink_from"]
+    drink_until = item["drink_until"]
+    maturity_data = item["maturity_data"]
+    taste_profile = item["taste_profile"]
+    food_pairings = item["food_pairings"]
+
+    # Vintage re-run rule: only when the user actually changed the year.
+    if year and str(year) != str(original_year or ""):
+        opts = load_options()
+        if _is_ai_configured(opts):
+            try:
+                image_b64, media_type = _load_image_b64(item["image"])
+                fields = _analyze_wine_from_context(
+                    opts, image_b64, media_type,
+                    {"name": name, "year": year, "type": wine_type, "region": region, "grape": grape},
+                )
+                if fields.get("drink_from") is not None:
+                    drink_from = fields["drink_from"]
+                if fields.get("drink_until") is not None:
+                    drink_until = fields["drink_until"]
+                if fields.get("maturity_data") is not None:
+                    maturity_data = json.dumps(fields["maturity_data"])
+                if fields.get("taste_profile") is not None:
+                    taste_profile = json.dumps(fields["taste_profile"])
+                if fields.get("food_pairings") is not None:
+                    food_pairings = json.dumps(fields["food_pairings"])
+            except Exception:
+                app.logger.exception("buy_list move re-analyze failed; carrying stored enrichment")
+
+    existing = _find_duplicate_wine(db, name, year, bottle_format, region, grape, wine_type)
+    if existing:
+        db.execute("UPDATE wines SET quantity = quantity + ? WHERE id=?", (qty, existing["id"]))
+        db.execute(
+            "INSERT INTO timeline (wine_id, action, quantity, timestamp) VALUES (?,?,?,?)",
+            (existing["id"], "restocked", qty, datetime.now().isoformat()),
+        )
+        wine_id = existing["id"]
+        restocked = True
+    else:
+        new_image = _copy_image_file(item["image"])
+        cur = db.execute(
+            """INSERT INTO wines
+               (name, year, type, region, quantity, rating, notes, image, added,
+                price, drink_from, drink_until, grape, bottle_format,
+                maturity_data, taste_profile, food_pairings)
+               VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+            (
+                name, year, wine_type, region, qty, 0, notes, new_image, str(date.today()),
+                price, drink_from, drink_until, grape, bottle_format,
+                maturity_data, taste_profile, food_pairings,
+            ),
+        )
+        wine_id = cur.lastrowid
+        db.execute(
+            "INSERT INTO timeline (wine_id, action, quantity, timestamp) VALUES (?,?,?,?)",
+            (wine_id, "added", qty, datetime.now().isoformat()),
+        )
+        restocked = False
+
+    _delete_buy_list_image_if_unused(db, item["image"], item_id)
+    db.execute("DELETE FROM buy_list WHERE id=?", (item_id,))
+    db.commit()
+
+    if is_ajax():
+        return jsonify({"ok": True, "wine_id": wine_id, "restocked": restocked})
+    return ingress_redirect("buy_list_page")
 
 
 def _normalize_duplicate_name(value):
