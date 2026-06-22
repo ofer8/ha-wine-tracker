@@ -568,6 +568,29 @@ def init_db():
             )
         """)
 
+        # ── buy_list (wishlist) table ─────────────────────────────────────
+        db.execute("""
+            CREATE TABLE IF NOT EXISTS buy_list (
+                id            INTEGER PRIMARY KEY AUTOINCREMENT,
+                name          TEXT NOT NULL,
+                year          INTEGER,
+                type          TEXT,
+                region        TEXT,
+                grape         TEXT,
+                price         REAL,
+                notes         TEXT,
+                image         TEXT,
+                bottle_format REAL DEFAULT 0.75,
+                desired_qty   INTEGER DEFAULT 1,
+                added_at      TEXT,
+                drink_from    INTEGER,
+                drink_until   INTEGER,
+                maturity_data TEXT,
+                taste_profile TEXT,
+                food_pairings TEXT
+            )
+        """)
+
         db.commit()
 
 
