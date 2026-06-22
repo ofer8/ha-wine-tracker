@@ -863,6 +863,64 @@ def buy_list_add():
     return ingress_redirect("buy_list_page")
 
 
+@app.route("/buy-list/edit/<int:item_id>", methods=["POST"])
+def buy_list_edit(item_id):
+    db = get_db()
+    item = db.execute("SELECT * FROM buy_list WHERE id=?", (item_id,)).fetchone()
+    if not item:
+        return jsonify({"ok": False, "error": "not_found"}), 404
+    vals = _buy_list_form_values()
+    if not vals["name"]:
+        return jsonify({"ok": False, "error": "name_required"}), 400
+    # Keep the existing image if no new one was provided.
+    image = vals["image"] or item["image"]
+    db.execute(
+        """UPDATE buy_list SET name=?, year=?, type=?, region=?, grape=?, price=?,
+           notes=?, image=?, bottle_format=?, desired_qty=?,
+           drink_from=?, drink_until=?, maturity_data=?, taste_profile=?, food_pairings=?
+           WHERE id=?""",
+        (
+            vals["name"], vals["year"], vals["type"], vals["region"], vals["grape"],
+            vals["price"], vals["notes"], image, vals["bottle_format"], vals["desired_qty"],
+            vals["drink_from"], vals["drink_until"],
+            vals["maturity_data"], vals["taste_profile"], vals["food_pairings"],
+            item_id,
+        ),
+    )
+    db.commit()
+    if is_ajax():
+        return jsonify({"ok": True})
+    return ingress_redirect("buy_list_page")
+
+
+def _delete_buy_list_image_if_unused(db, image, exclude_item_id):
+    """Remove an image file only if no wine and no other buy_list row references it."""
+    if not image:
+        return
+    in_wines = db.execute("SELECT COUNT(*) FROM wines WHERE image=?", (image,)).fetchone()[0]
+    in_buy = db.execute(
+        "SELECT COUNT(*) FROM buy_list WHERE image=? AND id!=?", (image, exclude_item_id)
+    ).fetchone()[0]
+    if in_wines == 0 and in_buy == 0:
+        try:
+            os.remove(os.path.join(UPLOAD_DIR, image))
+        except FileNotFoundError:
+            pass
+
+
+@app.route("/buy-list/delete/<int:item_id>", methods=["POST"])
+def buy_list_delete(item_id):
+    db = get_db()
+    item = db.execute("SELECT image FROM buy_list WHERE id=?", (item_id,)).fetchone()
+    if item:
+        _delete_buy_list_image_if_unused(db, item["image"], item_id)
+        db.execute("DELETE FROM buy_list WHERE id=?", (item_id,))
+        db.commit()
+    if is_ajax():
+        return jsonify({"ok": True})
+    return ingress_redirect("buy_list_page")
+
+
 def _normalize_duplicate_name(value):
     """Normalize AI/user label text enough for duplicate-name comparison."""
     folded = unicodedata.normalize("NFKD", value or "")

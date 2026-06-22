@@ -97,3 +97,23 @@ class TestBuyListAdd:
     def test_add_requires_name(self, client):
         resp = client.post("/buy-list/add", data={"desired_qty": "1"}, headers=AJAX)
         assert resp.status_code == 400
+
+
+class TestBuyListEditDelete:
+    def _add(self, client, **extra):
+        data = {"name": "X", "desired_qty": "1"}
+        data.update(extra)
+        return json.loads(client.post("/buy-list/add", data=data, headers=AJAX).data)["id"]
+
+    def test_edit_updates_fields(self, client, db):
+        item_id = self._add(client)
+        resp = client.post(f"/buy-list/edit/{item_id}", data={"name": "Renamed", "desired_qty": "4", "price": "20"}, headers=AJAX)
+        assert json.loads(resp.data)["ok"] is True
+        row = db.execute("SELECT name, desired_qty, price FROM buy_list WHERE id=?", (item_id,)).fetchone()
+        assert row[0] == "Renamed" and row[1] == 4 and row[2] == 20.0
+
+    def test_delete_removes_row(self, client, db):
+        item_id = self._add(client)
+        resp = client.post(f"/buy-list/delete/{item_id}", headers=AJAX)
+        assert json.loads(resp.data)["ok"] is True
+        assert db.execute("SELECT COUNT(*) FROM buy_list WHERE id=?", (item_id,)).fetchone()[0] == 0
