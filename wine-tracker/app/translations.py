@@ -178,6 +178,20 @@ TRANSLATIONS = {
     "wine_type_Likörwein": "Likörwein",
     "wine_type_Anderes": "Anderes",
 
+    # Buy List
+    "nav_buy_list": "Einkaufsliste",
+    "buy_list_title": "Einkaufsliste",
+    "tab_wishlist": "Wunschliste",
+    "tab_out_of_stock": "Ausverkauft",
+    "btn_add_to_wishlist": "Zur Wunschliste",
+    "label_desired_qty": "Wunschmenge",
+    "btn_move_to_cellar": "In den Keller",
+    "btn_rebuy": "Nachkaufen",
+    "empty_wishlist": "Deine Wunschliste ist leer.",
+    "empty_out_of_stock": "Nichts ist ausverkauft.",
+    "move_dialog_title": "Zum Keller hinzufügen",
+    "scan_label": "Etikett scannen",
+
     # Card
     "bottle_abbr": "Flasche",
     "bottles_abbr": "Flaschen",
@@ -535,6 +549,20 @@ TRANSLATIONS = {
     "wine_type_Likörwein": "Fortified Wine",
     "wine_type_Anderes": "Other",
 
+    # Buy List
+    "nav_buy_list": "Buy List",
+    "buy_list_title": "Buy List",
+    "tab_wishlist": "Wishlist",
+    "tab_out_of_stock": "Out of Stock",
+    "btn_add_to_wishlist": "Add to Wishlist",
+    "label_desired_qty": "Desired quantity",
+    "btn_move_to_cellar": "Move to Cellar",
+    "btn_rebuy": "Re-buy",
+    "empty_wishlist": "Your wishlist is empty.",
+    "empty_out_of_stock": "Nothing is out of stock.",
+    "move_dialog_title": "Add to Cellar",
+    "scan_label": "Scan label",
+
     "bottle_abbr": "Bottle",
     "bottles_abbr": "Bottles",
     "btn_less": "One bottle less",
@@ -884,6 +912,20 @@ TRANSLATIONS = {
     "wine_type_Dessertwein": "Vin de dessert",
     "wine_type_Likörwein": "Vin muté",
     "wine_type_Anderes": "Autre",
+
+    # Buy List
+    "nav_buy_list": "Liste d'achat",
+    "buy_list_title": "Liste d'achat",
+    "tab_wishlist": "Liste de souhaits",
+    "tab_out_of_stock": "Épuisé",
+    "btn_add_to_wishlist": "Ajouter à la liste",
+    "label_desired_qty": "Quantité souhaitée",
+    "btn_move_to_cellar": "Déplacer vers la cave",
+    "btn_rebuy": "Racheter",
+    "empty_wishlist": "Votre liste de souhaits est vide.",
+    "empty_out_of_stock": "Rien n'est épuisé.",
+    "move_dialog_title": "Ajouter à la cave",
+    "scan_label": "Scanner l'étiquette",
 
     "bottle_abbr": "Bouteille",
     "bottles_abbr": "Bouteilles",
@@ -1235,6 +1277,20 @@ TRANSLATIONS = {
     "wine_type_Likörwein": "Vino liquoroso",
     "wine_type_Anderes": "Altro",
 
+    # Buy List
+    "nav_buy_list": "Lista acquisti",
+    "buy_list_title": "Lista acquisti",
+    "tab_wishlist": "Lista desideri",
+    "tab_out_of_stock": "Esaurito",
+    "btn_add_to_wishlist": "Aggiungi alla lista",
+    "label_desired_qty": "Quantità desiderata",
+    "btn_move_to_cellar": "Sposta in cantina",
+    "btn_rebuy": "Ricompra",
+    "empty_wishlist": "La tua lista dei desideri è vuota.",
+    "empty_out_of_stock": "Niente è esaurito.",
+    "move_dialog_title": "Aggiungi alla cantina",
+    "scan_label": "Scansiona etichetta",
+
     "bottle_abbr": "Bottiglia",
     "bottles_abbr": "Bottiglie",
     "btn_less": "Una bottiglia in meno",
@@ -1584,6 +1640,20 @@ TRANSLATIONS = {
     "wine_type_Dessertwein": "Vino de postre",
     "wine_type_Likörwein": "Vino generoso",
     "wine_type_Anderes": "Otro",
+
+    # Buy List
+    "nav_buy_list": "Lista de compra",
+    "buy_list_title": "Lista de compra",
+    "tab_wishlist": "Lista de deseos",
+    "tab_out_of_stock": "Agotado",
+    "btn_add_to_wishlist": "Anadir a la lista",
+    "label_desired_qty": "Cantidad deseada",
+    "btn_move_to_cellar": "Mover a la bodega",
+    "btn_rebuy": "Volver a comprar",
+    "empty_wishlist": "Tu lista de deseos esta vacia.",
+    "empty_out_of_stock": "No hay nada agotado.",
+    "move_dialog_title": "Anadir a la bodega",
+    "scan_label": "Escanear etiqueta",
 
     "bottle_abbr": "Botella",
     "bottles_abbr": "Botellas",
@@ -1935,6 +2005,20 @@ TRANSLATIONS = {
     "wine_type_Likörwein": "Vinho generoso",
     "wine_type_Anderes": "Outro",
 
+    # Buy List
+    "nav_buy_list": "Lista de compras",
+    "buy_list_title": "Lista de compras",
+    "tab_wishlist": "Lista de desejos",
+    "tab_out_of_stock": "Esgotado",
+    "btn_add_to_wishlist": "Adicionar à lista",
+    "label_desired_qty": "Quantidade desejada",
+    "btn_move_to_cellar": "Mover para a adega",
+    "btn_rebuy": "Comprar de novo",
+    "empty_wishlist": "A sua lista de desejos está vazia.",
+    "empty_out_of_stock": "Nada esgotado.",
+    "move_dialog_title": "Adicionar à adega",
+    "scan_label": "Digitalizar rótulo",
+
     "bottle_abbr": "Garrafa",
     "bottles_abbr": "Garrafas",
     "btn_less": "Uma garrafa a menos",
@@ -2284,6 +2368,20 @@ TRANSLATIONS = {
     "wine_type_Dessertwein": "Dessertwijn",
     "wine_type_Likörwein": "Versterkte wijn",
     "wine_type_Anderes": "Overig",
+
+    # Buy List
+    "nav_buy_list": "Inkooplijst",
+    "buy_list_title": "Inkooplijst",
+    "tab_wishlist": "Verlanglijst",
+    "tab_out_of_stock": "Uitverkocht",
+    "btn_add_to_wishlist": "Aan verlanglijst",
+    "label_desired_qty": "Gewenste hoeveelheid",
+    "btn_move_to_cellar": "Naar de kelder",
+    "btn_rebuy": "Opnieuw kopen",
+    "empty_wishlist": "Je verlanglijst is leeg.",
+    "empty_out_of_stock": "Niets is uitverkocht.",
+    "move_dialog_title": "Aan kelder toevoegen",
+    "scan_label": "Etiket scannen",
 
     "bottle_abbr": "Fles",
     "bottles_abbr": "Flessen",

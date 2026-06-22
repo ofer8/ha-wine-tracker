@@ -28,3 +28,17 @@ class TestSchema:
             "food_pairings",
         }
         assert expected <= cols
+
+
+class TestTranslations:
+    def test_buy_list_keys_in_all_languages(self):
+        import translations
+        keys = [
+            "nav_buy_list", "buy_list_title", "tab_wishlist", "tab_out_of_stock",
+            "btn_add_to_wishlist", "label_desired_qty", "btn_move_to_cellar",
+            "btn_rebuy", "empty_wishlist", "empty_out_of_stock",
+            "move_dialog_title", "scan_label",
+        ]
+        for lang in ("de", "en", "fr", "it", "es", "pt", "nl"):
+            for key in keys:
+                assert key in translations.TRANSLATIONS[lang], f"{key} missing in {lang}"
