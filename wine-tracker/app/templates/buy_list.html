@@ -65,8 +65,8 @@
     <div class="bl-grid">
       {% for w in out_of_stock %}
       <div class="bl-card" data-wine-id="{{ w.id }}">
-        {% if w.image %}<img src="{{ ingress }}/uploads/{{ w.image }}" alt="" class="bl-thumb">{% endif %}
-        <div class="bl-card-body">
+        {% if w.image %}<img src="{{ ingress }}/uploads/{{ w.image }}" alt="" class="bl-thumb" style="cursor:pointer" onclick="viewOutOfStock({{ w.id }})">{% endif %}
+        <div class="bl-card-body" style="cursor:pointer" onclick="viewOutOfStock({{ w.id }})">
           <div class="bl-name">{{ w.name }}{% if w.year %} ({{ w.year }}){% endif %}</div>
           <div class="bl-meta">{{ w.region or '' }}{% if w.grape %} - {{ w.grape }}{% endif %}</div>
         </div>
@@ -91,13 +91,25 @@
 
 <script>
 const INGRESS = "{{ ingress }}";
+const CURRENCY = "{{ currency }}";
+const T = {{ t | tojson }};
+const AUTH_READONLY = {{ auth_readonly | tojson }};
 function toggleNavMenu(e){ if(e) e.stopPropagation(); document.getElementById('navMenu').classList.toggle('open'); }
 function blSelectTab(tab){
   document.querySelectorAll('.bl-tab').forEach(function(b){ b.classList.toggle('active', b.dataset.tab===tab); });
   document.getElementById('blPanelWishlist').style.display = (tab==='wishlist') ? '' : 'none';
   document.getElementById('blPanelOutOfStock').style.display = (tab==='out-of-stock') ? '' : 'none';
 }
+function viewOutOfStock(id) {
+  fetch(INGRESS + '/api/wine/' + id)
+    .then(function(r){ return r.json(); })
+    .then(function(data){ if (data.ok) openViewModal(data.wine.id, data.wine, true); })
+    .catch(function(){});
+}
 </script>
+{% include '_wine_view_modal.html' %}
+{% include '_wine_view_extras.html' %}
+{% include '_wine_view_script.html' %}
 {% include "_buy_list_modals.html" %}
 </body>
 </html>

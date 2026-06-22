@@ -53,6 +53,13 @@ class TestBuyListPage:
         assert b'data-tab="wishlist"' in resp.data
         assert b'data-tab="out-of-stock"' in resp.data
 
+    def test_out_of_stock_opens_readonly_detail_modal(self, client):
+        """Out-of-stock rows reuse the cellar read-only detail modal."""
+        resp = client.get("/buy-list")
+        assert b'id="viewModal"' in resp.data        # shared view-modal markup
+        assert b'function openViewModal' in resp.data  # shared renderer
+        assert b'viewOutOfStock' in resp.data          # OOS click wiring
+
     def test_out_of_stock_lists_only_zero_qty(self, client, db):
         db.execute(
             "INSERT INTO wines (name, quantity, type, bottle_format) VALUES (?,?,?,?)",

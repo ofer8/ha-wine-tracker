@@ -1,0 +1,124 @@
+{# Read-only wine-detail renderer for the buy-list out-of-stock view.
+   Mirrors the cellar page's openViewModal (index.html) but supports a
+   read-only flag that omits the edit action. Self-contained: defines the
+   small helpers it needs, since this partial is only included where the
+   cellar's inline copies are absent. #}
+<script>
+var BOTTLE_FORMATS = {
+  0.1875: 'Piccolo (0.1875 l)', 0.375: 'Demi (0.375 l)', 0.75: 'Standard (0.75 l)',
+  1.5: 'Magnum (1.5 l)', 3: 'Double Magnum (3 l)', 4.5: 'Jéroboam (4.5 l)',
+  6: 'Impérial (6 l)', 9: 'Salmanazar (9 l)', 12: 'Balthazar (12 l)',
+  15: 'Nebukadnezar (15 l)'
+};
+
+function escapeHtml(s) {
+  if (!s) return '';
+  var d = document.createElement('div');
+  d.appendChild(document.createTextNode(s));
+  return d.innerHTML;
+}
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+function openLightbox(src) { window.open(src, '_blank', 'noopener'); }
+
+function viewRow(icon, label, value) {
+  return '<div class="view-row"><i class="mdi ' + icon + '"></i>'
+       + '<span class="view-label">' + escapeHtml(label) + '</span>'
+       + '<span class="view-value">' + escapeHtml(String(value)) + '</span></div>';
+}
+
+function openViewModal(id, wine, readOnly) {
+  var w = wine || {};
+  window._viewWineId = id;
+  window._viewWineData = w;
+
+  document.getElementById('viewModalTitle').textContent = T.modal_view_title || 'Wine details';
+
+  var html = '';
+
+  // Photo panel (on right on desktop)
+  var ribbonHtml = '';
+  if (w.type) {
+    var typeKey = 'wine_type_' + w.type;
+    var typeLabel = T[typeKey] || w.type;
+    ribbonHtml = '<span class="ribbon ribbon-' + escapeHtml(w.type.toLowerCase().replace(/[éö]/g, function(c){return c==='é'?'e':'oe';})) + '">' + escapeHtml(typeLabel) + '</span>';
+  }
+  if (w.image) {
+    html += '<div class="view-photo-panel" onclick="openLightbox(\'' + INGRESS + '/uploads/' + encodeURIComponent(w.image) + '\')">'
+          + ribbonHtml
+          + '<img src="' + INGRESS + '/uploads/' + encodeURIComponent(w.image) + '" alt="' + escapeHtml(w.name) + '">'
+          + '</div>';
+  } else if (ribbonHtml) {
+    html += '<div class="view-photo-panel view-no-image">' + ribbonHtml + '</div>';
+  }
+
+  // Fields panel (on left on desktop)
+  html += '<div class="view-fields-panel">';
+
+  // Name
+  html += '<div class="view-name">' + escapeHtml(w.name) + '</div>';
+
+  // Meta: year + region
+  var meta = [];
+  if (w.year) meta.push('<span>' + w.year + '</span>');
+  if (w.region) meta.push('<span>' + escapeHtml(w.region) + '</span>');
+  if (meta.length) html += '<div class="view-meta">' + meta.join('') + '</div>';
+
+  // Rating stars
+  if (w.rating && w.rating > 0) {
+    var stars = '';
+    for (var i = 0; i < 5; i++) stars += '<i class="mdi ' + (i < w.rating ? 'mdi-star' : 'mdi-star-outline') + '"></i>';
+    html += '<div class="view-stars">' + stars + '</div>';
+  }
+
+  // Details section
+  var details = '';
+  details += viewRow('mdi-bottle-wine', T.label_quantity || 'Quantity', w.quantity);
+  if (w.bottle_format && parseFloat(w.bottle_format) !== 0.75) {
+    var fmt = BOTTLE_FORMATS[parseFloat(w.bottle_format)] || w.bottle_format + ' l';
+    details += viewRow('mdi-ruler', T.label_bottle_format || 'Format', fmt);
+  }
+  if (w.grape) details += viewRow('mdi-fruit-grapes', T.label_grape || 'Grape', w.grape);
+  if (w.purchased_at) details += viewRow('mdi-cart', T.label_purchased_at || 'Purchased at', w.purchased_at);
+  if (w.price) {
+    var currency = (typeof CURRENCY !== 'undefined' ? CURRENCY : 'CHF');
+    details += viewRow('mdi-cash', T.label_price || 'Price', currency + ' ' + Number(w.price).toFixed(2));
+  }
+  if (w.drink_from || w.drink_until) {
+    var window_str = (w.drink_from || '?') + ' - ' + (w.drink_until || '?');
+    details += viewRow('mdi-calendar-range', T.view_drink_window || 'Drink window', window_str);
+  }
+  if (w.location) details += viewRow('mdi-map-marker', T.label_location || 'Location', w.location);
+  if (w.vivino_id) {
+    details += '<div class="view-row"><i class="mdi mdi-open-in-new"></i>'
+             + '<span class="view-label">Vivino</span>'
+             + '<a href="https://www.vivino.com/w/' + w.vivino_id + '" target="_blank" rel="noopener" class="view-vivino-link view-value">vivino.com</a></div>';
+  }
+  if (details) {
+    html += '<div class="view-details">' + details + '</div>';
+  }
+
+  // Notes
+  if (w.notes) {
+    html += '<div class="view-notes">' + escapeHtml(w.notes) + '</div>';
+  }
+
+  // Maturity graph, taste profile, food pairings
+  if (typeof buildWineExtrasHtml === 'function') {
+    html += buildWineExtrasHtml(w);
+  }
+
+  // Action buttons (omitted in read-only / buy-list context)
+  if (!AUTH_READONLY && !readOnly) {
+    html += '<div class="view-actions">';
+    html += '<button class="btn-submit" onclick="editFromView()">' + (T.btn_edit || 'Edit') + '</button>';
+    html += '</div>';
+  }
+
+  // Close fields panel
+  html += '</div>';
+
+  document.getElementById('viewModalBody').innerHTML = html;
+  openModal('viewModal');
+}
+</script>
