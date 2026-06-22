@@ -137,3 +137,67 @@ def compute_stats(db, current_year):
         "by_grape": by_grape,
         "by_decade": by_decade,
     }
+
+
+_FAR_YEAR = 9999  # sort sentinel so None drink years sort last without comparing None
+
+
+def _dw_entry(row):
+    return {
+        "id": row["id"],
+        "name": row["name"],
+        "year": row["year"],
+        "type": type_en(row["type"]),
+        "quantity": row["quantity"],
+        "drink_from": row["drink_from"],
+        "drink_until": row["drink_until"],
+        "location": row["location"],
+    }
+
+
+def compute_drink_window(db, current_year):
+    """Bucket in-stock wines (quantity > 0) by drinking-window state for current_year."""
+    rows = db.execute(
+        "SELECT id, name, year, type, quantity, drink_from, drink_until, location "
+        "FROM wines WHERE quantity > 0"
+    ).fetchall()
+
+    ready, too_young, past_peak, unknown = [], [], [], []
+    entering = leaving = 0
+    for r in rows:
+        frm, until = r["drink_from"], r["drink_until"]
+        if frm is None and until is None:
+            unknown.append(r)
+            continue
+        if frm == current_year:
+            entering += 1
+        if until == current_year:
+            leaving += 1
+        if frm is not None and current_year < frm:
+            too_young.append(r)
+        elif until is not None and current_year > until:
+            past_peak.append(r)
+        else:
+            ready.append(r)
+
+    ready.sort(key=lambda r: r["drink_until"] if r["drink_until"] is not None else _FAR_YEAR)
+    too_young.sort(key=lambda r: r["drink_from"] if r["drink_from"] is not None else _FAR_YEAR)
+    past_peak.sort(key=lambda r: r["drink_until"] if r["drink_until"] is not None else _FAR_YEAR)
+    unknown.sort(key=lambda r: (r["name"] or "").lower())
+
+    return {
+        "current_year": current_year,
+        "ready_now": len(ready),
+        "entering_this_year": entering,
+        "leaving_this_year": leaving,
+        "counts": {
+            "ready": len(ready),
+            "too_young": len(too_young),
+            "past_peak": len(past_peak),
+            "unknown": len(unknown),
+        },
+        "ready": [_dw_entry(r) for r in ready],
+        "too_young": [_dw_entry(r) for r in too_young],
+        "past_peak": [_dw_entry(r) for r in past_peak],
+        "unknown": [_dw_entry(r) for r in unknown],
+    }

@@ -148,3 +148,54 @@ def test_stats_out_of_stock(db):
     s = api_queries.compute_stats(db, 2026)
     assert s["out_of_stock"] == 1
     assert s["total_bottles"] == 2
+
+
+# ── compute_drink_window / /api/drink-window ────────────────────────────────────
+def test_drink_window_buckets_both_bounds(db):
+    _insert(db, name="Ready", type="Rotwein", quantity=1, drink_from=2022, drink_until=2028)
+    _insert(db, name="Young", quantity=1, drink_from=2030, drink_until=2035)
+    _insert(db, name="Past", quantity=1, drink_from=2010, drink_until=2020)
+    _insert(db, name="Unknown", quantity=1)
+    dw = api_queries.compute_drink_window(db, 2026)
+    assert dw["counts"] == {"ready": 1, "too_young": 1, "past_peak": 1, "unknown": 1}
+    assert dw["ready_now"] == 1
+    assert dw["ready"][0]["name"] == "Ready"
+    assert dw["ready"][0]["type"] == "Red Wine"        # English label
+    assert dw["too_young"][0]["name"] == "Young"
+    assert dw["past_peak"][0]["name"] == "Past"
+    assert dw["unknown"][0]["name"] == "Unknown"
+
+
+def test_drink_window_one_sided_bounds(db):
+    _insert(db, name="OnlyFromReady", quantity=1, drink_from=2025, drink_until=None)
+    _insert(db, name="OnlyFromYoung", quantity=1, drink_from=2030, drink_until=None)
+    _insert(db, name="OnlyUntilReady", quantity=1, drink_from=None, drink_until=2026)
+    _insert(db, name="OnlyUntilPast", quantity=1, drink_from=None, drink_until=2020)
+    dw = api_queries.compute_drink_window(db, 2026)
+    names = lambda bucket: {e["name"] for e in dw[bucket]}
+    assert names("ready") == {"OnlyFromReady", "OnlyUntilReady"}
+    assert names("too_young") == {"OnlyFromYoung"}
+    assert names("past_peak") == {"OnlyUntilPast"}
+
+
+def test_drink_window_entering_and_leaving(db):
+    _insert(db, name="Entering", quantity=1, drink_from=2026, drink_until=2030)
+    _insert(db, name="Leaving", quantity=1, drink_from=2020, drink_until=2026)
+    dw = api_queries.compute_drink_window(db, 2026)
+    assert dw["entering_this_year"] == 1
+    assert dw["leaving_this_year"] == 1
+
+
+def test_drink_window_excludes_out_of_stock(db):
+    _insert(db, name="Empty", quantity=0, drink_from=2022, drink_until=2028)
+    dw = api_queries.compute_drink_window(db, 2026)
+    assert dw["counts"] == {"ready": 0, "too_young": 0, "past_peak": 0, "unknown": 0}
+
+
+def test_drink_window_route(client, db):
+    _insert(db, name="Ready", quantity=1, drink_from=2022, drink_until=2028)
+    resp = client.get("/api/drink-window")
+    data = json.loads(resp.data)
+    assert data["ok"] is True
+    assert "current_year" in data
+    assert set(data["counts"]) == {"ready", "too_young", "past_peak", "unknown"}
