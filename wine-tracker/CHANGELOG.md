@@ -1,5 +1,19 @@
 # Changelog
 
+## 1.11.0
+
+- **Duplicate detection when adding a wine** - the add-wine flow now detects when a bottle closely matches one already in your cellar and lets you merge it into the existing entry or keep it as a separate row, with a confirmation dialog localised in all 7 languages.
+- **Fix duplicate entry when restocking** - restocking a wine could create a second row instead of increasing the existing bottle's quantity; the restock flow now updates the original entry.
+- **English wine types in `/api/summary`** - the summary feed consumed by Home Assistant REST sensors returned raw German type labels (Rotwein, Weisswein, ...); they are now mapped to English so sensors read consistently regardless of the configured UI language.
+- **Autocomplete on advanced-filter inputs** - the advanced filter's text fields now suggest existing values (region, grape, producer, ...) as you type.
+- **Advanced-filter badge fixes** - the filter button no longer shows an empty blue dot when no filters are active, and the badge count no longer includes stale empty rules.
+- **Mobile advanced-filter polish** - fixed several layout and interaction issues found on mobile while testing the v1.10.0 advanced filter.
+- **Renamed advanced-filter group labels** in all 7 languages for clarity.
+- **Replaced em/en-dashes with plain hyphens app-wide** for consistent rendering across fonts.
+- **Home Assistant dev-addon update script** - added `scripts/update-ha-dev.sh` for one-command updates from GitHub, using `ha apps` with first-install detection.
+- **Local Docker Compose setup** for development.
+- **Point add-on metadata at the ofer8 fork** so the add-on installs and links correctly from this fork.
+
 ## 1.10.0
 
 - **Advanced filter with multiple AND-conditions** - filter the cellar by any combination of fields (type, vintage, region, grape, rating, drink window, location, source, format, ...) in a single popover. Resolves #5.
