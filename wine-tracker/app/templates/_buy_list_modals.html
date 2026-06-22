@@ -1,0 +1,129 @@
+<div id="wishlistModal" class="modal" style="display:none">
+  <div class="modal-box">
+    <h3 id="wishlistModalTitle">{{ t.btn_add_to_wishlist }}</h3>
+
+    {% if ai_enabled %}
+    <div class="bl-scan-row">
+      <label class="btn-secondary">
+        <i class="mdi mdi-camera"></i> {{ t.scan_label }}
+        <input id="blScanInput" type="file" accept="image/*" capture="environment" style="display:none" onchange="blScanLabel(this.files[0])">
+      </label>
+      <span id="blScanLoading" style="display:none">...</span>
+    </div>
+    {% endif %}
+
+    <form id="wishlistForm" onsubmit="return submitWishlist(event)" enctype="multipart/form-data">
+      <input type="hidden" name="ai_image" id="blAiImage" value="">
+      <input type="hidden" name="maturity_data" id="blMaturity" value="">
+      <input type="hidden" name="taste_profile" id="blTaste" value="">
+      <input type="hidden" name="food_pairings" id="blPairings" value="">
+      <div><label>{{ t.label_name }}</label><input type="text" name="name" id="blName" required></div>
+      <div class="row2">
+        <div><label>{{ t.label_vintage }}</label><input type="number" name="year" id="blYear" min="1900" max="2099"></div>
+        <div><label>{{ t.label_desired_qty }}</label><input type="number" name="desired_qty" id="blDesiredQty" min="1" value="1"></div>
+      </div>
+      <div class="row2">
+        <div><label>{{ t.label_type }}</label>
+          <select name="type" id="blType">
+            <option value="">{{ t.type_select_default }}</option>
+            {% for wt in wine_types %}<option value="{{ wt }}">{{ wt | wine_type }}</option>{% endfor %}
+          </select>
+        </div>
+        <div><label>{{ t.label_region }}</label><input type="text" name="region" id="blRegion"></div>
+      </div>
+      <div class="row2">
+        <div><label>{{ t.label_grape }}</label><input type="text" name="grape" id="blGrape"></div>
+        <div><label>{{ t.label_price }} ({{ currency }})</label><input type="number" name="price" id="blPrice" min="0" step="0.01"></div>
+      </div>
+      <div class="row2">
+        <div><label>{{ t.label_drink_from }}</label><input type="number" name="drink_from" id="blDrinkFrom" min="2000" max="2099"></div>
+        <div><label>{{ t.label_drink_until }}</label><input type="number" name="drink_until" id="blDrinkUntil" min="2000" max="2099"></div>
+      </div>
+      <div><label>{{ t.label_notes }}</label><textarea name="notes" id="blNotes"></textarea></div>
+      <div class="form-footer">
+        <button type="button" class="btn-cancel" onclick="closeWishlistModal()">{{ t.btn_cancel }}</button>
+        <button type="submit" class="btn-primary">{{ t.btn_save }}</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+let _wishlistEditId = null;
+
+function _blResetForm() {
+  document.getElementById('wishlistForm').reset();
+  ['blAiImage','blMaturity','blTaste','blPairings'].forEach(function(id){ document.getElementById(id).value=''; });
+}
+function openWishlistAdd() {
+  _wishlistEditId = null;
+  _blResetForm();
+  document.getElementById('wishlistModalTitle').textContent = "{{ t.btn_add_to_wishlist }}";
+  document.getElementById('wishlistModal').style.display = 'flex';
+}
+function openWishlistEdit(item) {
+  _wishlistEditId = item.id;
+  _blResetForm();
+  document.getElementById('wishlistModalTitle').textContent = "{{ t.btn_edit if t.btn_edit is defined else 'Edit' }}";
+  document.getElementById('blName').value = item.name || '';
+  document.getElementById('blYear').value = item.year || '';
+  document.getElementById('blDesiredQty').value = item.desired_qty || 1;
+  document.getElementById('blType').value = item.type || '';
+  document.getElementById('blRegion').value = item.region || '';
+  document.getElementById('blGrape').value = item.grape || '';
+  document.getElementById('blPrice').value = item.price || '';
+  document.getElementById('blDrinkFrom').value = item.drink_from || '';
+  document.getElementById('blDrinkUntil').value = item.drink_until || '';
+  document.getElementById('blNotes').value = item.notes || '';
+  document.getElementById('blMaturity').value = item.maturity_data || '';
+  document.getElementById('blTaste').value = item.taste_profile || '';
+  document.getElementById('blPairings').value = item.food_pairings || '';
+  document.getElementById('wishlistModal').style.display = 'flex';
+}
+function closeWishlistModal() { document.getElementById('wishlistModal').style.display = 'none'; }
+
+function blScanLabel(file) {
+  if (!file) return;
+  document.getElementById('blScanLoading').style.display = '';
+  const fd = new FormData();
+  fd.append('image', file);
+  fetch(INGRESS + '/api/analyze-wine', { method: 'POST', body: fd, headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+    .then(function(r){ return r.json(); })
+    .then(function(data){
+      document.getElementById('blScanLoading').style.display = 'none';
+      if (!data.ok) { if (data.image_filename) document.getElementById('blAiImage').value = data.image_filename; return; }
+      const f = data.fields || {};
+      if (f.name) document.getElementById('blName').value = f.name;
+      if (f.vintage) document.getElementById('blYear').value = f.vintage;
+      if (f.wine_type) document.getElementById('blType').value = f.wine_type;
+      if (f.region) document.getElementById('blRegion').value = f.region;
+      if (f.grape) document.getElementById('blGrape').value = f.grape;
+      if (f.price) document.getElementById('blPrice').value = f.price;
+      if (f.drink_from) document.getElementById('blDrinkFrom').value = f.drink_from;
+      if (f.drink_until) document.getElementById('blDrinkUntil').value = f.drink_until;
+      if (f.notes) document.getElementById('blNotes').value = f.notes;
+      if (f.maturity_data) document.getElementById('blMaturity').value = JSON.stringify(f.maturity_data);
+      if (f.taste_profile) document.getElementById('blTaste').value = JSON.stringify(f.taste_profile);
+      if (f.food_pairings) document.getElementById('blPairings').value = JSON.stringify(f.food_pairings);
+      if (data.image_filename) document.getElementById('blAiImage').value = data.image_filename;
+    })
+    .catch(function(){ document.getElementById('blScanLoading').style.display = 'none'; });
+}
+
+function submitWishlist(e) {
+  e.preventDefault();
+  const form = document.getElementById('wishlistForm');
+  const fd = new FormData(form);
+  const url = _wishlistEditId ? (INGRESS + '/buy-list/edit/' + _wishlistEditId) : (INGRESS + '/buy-list/add');
+  fetch(url, { method: 'POST', body: fd, headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+    .then(function(r){ return r.json(); })
+    .then(function(data){ if (data.ok) location.reload(); });
+  return false;
+}
+
+function removeWishlistItem(id) {
+  fetch(INGRESS + '/buy-list/delete/' + id, { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+    .then(function(r){ return r.json(); })
+    .then(function(data){ if (data.ok) location.reload(); });
+}
+</script>

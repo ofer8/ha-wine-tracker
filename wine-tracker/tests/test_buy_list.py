@@ -291,3 +291,18 @@ class TestMoveToCellar:
         body = json.loads(resp.data)
         w = db.execute("SELECT drink_from, drink_until FROM wines WHERE id=?", (body["wine_id"],)).fetchone()
         assert w[0] == 2030 and w[1] == 2040
+
+
+class TestWishlistModal:
+    def test_add_modal_markup_present(self, client):
+        resp = client.get("/buy-list")
+        assert b'id="wishlistForm"' in resp.data
+        assert b'id="blDesiredQty"' in resp.data
+        assert b'openWishlistAdd' in resp.data
+
+    def test_scan_control_present_when_ai_enabled(self, client, monkeypatch):
+        import app as wine_app
+        monkeypatch.setattr(wine_app, "_is_ai_configured", lambda opts: True)
+        resp = client.get("/buy-list")
+        assert b'blScanInput' in resp.data
+        assert b'/api/analyze-wine' in resp.data
