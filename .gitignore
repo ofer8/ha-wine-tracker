@@ -1,4 +1,5 @@
 RUN_LOCAL_INFO.md
+.env
 wine-tracker/.pytest_cache/
 wine-tracker/app/__pycache__/
 wine-tracker/app/data/

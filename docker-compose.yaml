@@ -1,0 +1,22 @@
+services:
+  wine-tracker:
+    image: ha-wine-tracker:local
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    ports:
+      - "5050:5050"
+    volumes:
+      - wine-data:/data
+    environment:
+      AUTH_ENABLED: "false"
+      SECRET_KEY: "${SECRET_KEY:-local-dev-secret-change-me}"
+      CURRENCY: "${CURRENCY:-USD}"
+      LANGUAGE: "en"
+      AI_PROVIDER: "openai"
+      OPENAI_API_KEY: "${OPENAI_API_KEY:-}"
+      OPENAI_MODEL: "${OPENAI_MODEL:-gpt-5.5}"
+    restart: unless-stopped
+
+volumes:
+  wine-data:
