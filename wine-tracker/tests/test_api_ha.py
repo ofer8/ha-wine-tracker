@@ -302,3 +302,40 @@ def test_wines_pagination_offset(client, db):
     assert data["count"] == 3            # total before pagination
     assert data["returned"] == 2
     assert [w["name"] for w in data["wines"]] == ["W1", "W2"]
+
+
+# ── /api/wines/<id> detail ──────────────────────────────────────────────────────
+def test_wine_detail_full_record(client, db):
+    wid = _insert(db, name="A", type="Rotwein", image="a.jpg",
+                  maturity_data='{"k": 1}', food_pairings='["cheese"]')
+    resp = client.get(f"/api/wines/{wid}")
+    data = json.loads(resp.data)
+    assert data["ok"] is True
+    w = data["wine"]
+    assert w["type"] == "Red Wine"
+    assert w["image_path"] == "/uploads/a.jpg"
+    assert w["maturity_data"] == {"k": 1}        # parsed, present in detail
+    assert w["food_pairings"] == ["cheese"]
+
+
+def test_wine_detail_not_found(client):
+    resp = client.get("/api/wines/999999")
+    data = json.loads(resp.data)
+    assert resp.status_code == 404
+    assert data["ok"] is False
+    assert data["error"] == "not_found"
+
+
+# ── auth gate (mirrors test_api.py auth pattern) ────────────────────────────────
+def test_api_requires_auth_when_enabled():
+    import app as wine_app
+    wine_app.init_db()
+    wine_app.AUTH_ENABLED = True
+    try:
+        c = wine_app.app.test_client()
+        assert c.get("/api/stats").status_code == 401
+        assert c.get("/api/wines").status_code == 401
+        assert c.get("/api/drink-window").status_code == 401
+        assert c.get("/api/wines/1").status_code == 401
+    finally:
+        wine_app.AUTH_ENABLED = False

@@ -3168,6 +3168,15 @@ def api_wines_list():
     return jsonify(ok=True, **api_queries.query_wines(db, request.args))
 
 
+@app.route("/api/wines/<int:wine_id>")
+def api_wines_detail(wine_id):
+    db = get_db()
+    row = db.execute("SELECT * FROM wines WHERE id = ?", (wine_id,)).fetchone()
+    if not row:
+        return jsonify(ok=False, error="not_found"), 404
+    return jsonify(ok=True, wine=api_queries.serialize_wine(row, full=True))
+
+
 # ── Main ──────────────────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
