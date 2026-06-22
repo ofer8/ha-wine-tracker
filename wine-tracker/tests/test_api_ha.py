@@ -291,3 +291,14 @@ def test_wines_pagination(client, db):
     assert data["count"] == 3
     assert data["returned"] == 2
     assert len(data["wines"]) == 2
+
+
+def test_wines_pagination_offset(client, db):
+    for i in range(3):
+        _insert(db, name=f"W{i}")
+    # default name sort asc -> W0, W1, W2; offset=1 limit=2 -> W1, W2
+    resp = client.get("/api/wines?sort=name&order=asc&limit=2&offset=1")
+    data = json.loads(resp.data)
+    assert data["count"] == 3            # total before pagination
+    assert data["returned"] == 2
+    assert [w["name"] for w in data["wines"]] == ["W1", "W2"]
