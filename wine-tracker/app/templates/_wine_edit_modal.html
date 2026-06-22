@@ -833,17 +833,34 @@ function reloadViaVivino() {
 // Uses a callback pattern: if window._onWineSaved is defined, call it;
 // otherwise reload the page.
 
+var _dupPendingForm = null;
+var _dupPending = null;
+
 document.getElementById('wineForm').addEventListener('submit', function(e) {
   e.preventDefault();
   var form = this;
+  submitWineForm(form, null);
+});
+
+function submitWineForm(form, dupAction, targetId) {
   var fd = new FormData(form);
+  if (dupAction) {
+    fd.set('dup_action', dupAction);
+    if (targetId != null) fd.set('dup_target_id', targetId);
+  }
   fetch(form.action, {
     method: 'POST', body: fd,
     headers: { 'X-Requested-With': 'XMLHttpRequest' }
   })
   .then(function(r) { return r.json(); })
   .then(function(data) {
+    // Duplicate detected on an /add submit -> ask the user.
+    if (!data.ok && data.duplicate) {
+      showDupDetectDialog(form, data.duplicate);
+      return;
+    }
     if (!data.ok) return;
+    closeModal('dupDetectModal');
     closeModal('wineModal');
     if (typeof window._onWineSaved === 'function') {
       window._onWineSaved(data);
@@ -851,7 +868,36 @@ document.getElementById('wineForm').addEventListener('submit', function(e) {
       window.location.reload();
     }
   });
-});
+}
+
+function showDupDetectDialog(form, dup) {
+  _dupPendingForm = form;
+  _dupPending = dup;
+  var addedQty = parseInt(new FormData(form).get('quantity') || '1', 10) || 1;
+  var fmt = String(dup.bottle_format != null ? dup.bottle_format : '');
+  var body = (window.T.dup_detect_body || '')
+    .replace('{qty}', dup.quantity)
+    .replace('{name}', dup.name || '')
+    .replace('{year}', dup.year || '')
+    .replace('{format}', fmt)
+    .replace('{location}', dup.location || '-');
+  document.getElementById('dupDetectBody').textContent = body;
+  document.getElementById('dupMergeBtn').textContent =
+    (window.T.dup_detect_merge || '').replace('{n}', dup.quantity + addedQty);
+  openModal('dupDetectModal');
+}
+
+function dupMerge() {
+  if (_dupPendingForm && _dupPending) {
+    submitWineForm(_dupPendingForm, 'merge', _dupPending.id);
+  }
+}
+
+function dupSeparate() {
+  if (_dupPendingForm) {
+    submitWineForm(_dupPendingForm, 'separate');
+  }
+}
 
 // ── Modal overlay / ESC handling for wineModal ──────────────────────────────
 // Other pages set up generic overlay click handlers; we need the wineModal-specific
