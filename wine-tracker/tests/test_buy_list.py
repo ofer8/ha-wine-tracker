@@ -306,3 +306,12 @@ class TestWishlistModal:
         resp = client.get("/buy-list")
         assert b'blScanInput' in resp.data
         assert b'/api/analyze-wine' in resp.data
+
+
+class TestMoveDialogUI:
+    def test_move_dialog_markup_present(self, client):
+        resp = client.get("/buy-list")
+        assert b'id="moveForm"' in resp.data
+        assert b'id="moveOriginalYear"' in resp.data
+        assert b'openMoveToCellar' in resp.data
+        assert b'rebuyWine' in resp.data

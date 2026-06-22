@@ -129,3 +129,73 @@ function removeWishlistItem(id) {
     .then(function(data){ if (data.ok) location.reload(); });
 }
 </script>
+
+<div id="moveModal" class="modal" style="display:none">
+  <div class="modal-box">
+    <h3>{{ t.move_dialog_title }}</h3>
+    <form id="moveForm" onsubmit="return submitMove(event)">
+      <input type="hidden" name="original_year" id="moveOriginalYear" value="">
+      <input type="hidden" name="maturity_data" id="moveMaturity" value="">
+      <input type="hidden" name="taste_profile" id="moveTaste" value="">
+      <input type="hidden" name="food_pairings" id="movePairings" value="">
+      <input type="hidden" name="bottle_format" id="moveBottleFormat" value="0.75">
+      <div><label>{{ t.label_name }}</label><input type="text" name="name" id="moveName" required></div>
+      <div class="row2">
+        <div><label>{{ t.label_vintage }}</label><input type="number" name="year" id="moveYear" min="1900" max="2099"></div>
+        <div><label>{{ t.label_quantity }}</label><input type="number" name="quantity" id="moveQty" min="1" value="1"></div>
+      </div>
+      <div class="row2">
+        <div><label>{{ t.label_type }}</label>
+          <select name="type" id="moveType">
+            <option value="">{{ t.type_select_default }}</option>
+            {% for wt in wine_types %}<option value="{{ wt }}">{{ wt | wine_type }}</option>{% endfor %}
+          </select>
+        </div>
+        <div><label>{{ t.label_price }} ({{ currency }})</label><input type="number" name="price" id="movePrice" min="0" step="0.01"></div>
+      </div>
+      <div class="row2">
+        <div><label>{{ t.label_region }}</label><input type="text" name="region" id="moveRegion"></div>
+        <div><label>{{ t.label_grape }}</label><input type="text" name="grape" id="moveGrape"></div>
+      </div>
+      <div class="form-footer">
+        <button type="button" class="btn-cancel" onclick="closeMoveModal()">{{ t.btn_cancel }}</button>
+        <button type="submit" class="btn-primary">{{ t.btn_move_to_cellar }}</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+let _moveItemId = null;
+function openMoveToCellar(item) {
+  _moveItemId = item.id;
+  document.getElementById('moveOriginalYear').value = item.year || '';
+  document.getElementById('moveName').value = item.name || '';
+  document.getElementById('moveYear').value = item.year || '';
+  document.getElementById('moveQty').value = item.desired_qty || 1;
+  document.getElementById('moveType').value = item.type || '';
+  document.getElementById('movePrice').value = item.price || '';
+  document.getElementById('moveRegion').value = item.region || '';
+  document.getElementById('moveGrape').value = item.grape || '';
+  document.getElementById('moveBottleFormat').value = item.bottle_format || 0.75;
+  document.getElementById('moveMaturity').value = item.maturity_data || '';
+  document.getElementById('moveTaste').value = item.taste_profile || '';
+  document.getElementById('movePairings').value = item.food_pairings || '';
+  document.getElementById('moveModal').style.display = 'flex';
+}
+function closeMoveModal() { document.getElementById('moveModal').style.display = 'none'; }
+function submitMove(e) {
+  e.preventDefault();
+  const fd = new FormData(document.getElementById('moveForm'));
+  fetch(INGRESS + '/buy-list/move/' + _moveItemId, { method: 'POST', body: fd, headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+    .then(function(r){ return r.json(); })
+    .then(function(data){ if (data.ok) location.reload(); });
+  return false;
+}
+function rebuyWine(wineId, btn) {
+  if (btn) btn.disabled = true;
+  fetch(INGRESS + '/buy-list/rebuy/' + wineId, { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+    .then(function(r){ return r.json(); })
+    .then(function(data){ if (data.ok) location.reload(); });
+}
+</script>
