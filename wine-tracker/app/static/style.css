@@ -802,6 +802,16 @@ html.light .filter-option:hover { background: rgba(0,0,0,.05); }
 /* Duplicate modal */
 .dup-hint { font-size: .82rem; color: var(--muted); background: var(--bg);
             border-radius: 8px; padding: .75rem; line-height: 1.5; }
+.duplicate-detect-overlay { z-index: 260; }
+.duplicate-detect-modal { max-width: 380px; }
+.duplicate-detect-actions {
+  flex-direction: column;
+  gap: 8px;
+}
+.duplicate-detect-actions .btn-submit,
+.duplicate-detect-actions .btn-cancel {
+  width: 100%;
+}
 
 /* ── Form Elements ─────────────────────────────────────────────────────────── */
 label { font-size: .8rem; color: var(--muted); display: block; margin-bottom: .25rem; }

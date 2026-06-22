@@ -111,6 +111,13 @@ class TestIndex:
         resp = client.get("/")
         assert b'id="viewModal"' in resp.data
 
+    def test_duplicate_detect_modal_present_once(self, client):
+        """Duplicate-detect dialog belongs to the shared add/edit modal stack."""
+        resp = client.get("/")
+        html = resp.data.decode()
+        assert html.count('id="dupDetectModal"') == 1
+        assert 'duplicate-detect-overlay' in html
+
     def test_card_body_calls_view(self, client, sample_wine):
         """Card body onclick should call viewFromCard."""
         resp = client.get("/")
@@ -561,6 +568,7 @@ class TestStatsPage:
         html = resp.data.decode()
         assert 'id="wineModal"' in html
         assert 'id="wineForm"' in html
+        assert html.count('id="dupDetectModal"') == 1
 
     def test_stats_stock_chart_with_timeline(self, client, sample_wine, db):
         """Stats page should include stock chart data when timeline entries exist."""
@@ -681,6 +689,11 @@ class TestTimelinePage:
         resp = client.get("/timeline")
         assert resp.status_code == 200
         assert b"timeline" in resp.data.lower() or b"Zeitverlauf" in resp.data
+
+    def test_timeline_has_duplicate_detect_modal(self, client):
+        resp = client.get("/timeline")
+        html = resp.data.decode()
+        assert html.count('id="dupDetectModal"') == 1
 
 
 # ── Wine log integration ─────────────────────────────────────────────────────
@@ -821,6 +834,19 @@ class TestChatPage:
         assert "openViewModal" in html
         assert "/api/wine/" in html
         assert 'id="viewModal"' in html
+
+    @patch("app.load_options")
+    def test_chat_has_duplicate_detect_modal(self, mock_opts, client):
+        mock_opts.return_value = {
+            "currency": "CHF", "language": "en",
+            "ai_provider": "anthropic", "anthropic_api_key": "sk-test",
+            "anthropic_model": "claude-sonnet-4-20250514",
+            "openai_api_key": "", "openrouter_api_key": "",
+            "ollama_host": "", "ollama_model": "",
+        }
+        response = client.get("/chat")
+        html = response.data.decode()
+        assert html.count('id="dupDetectModal"') == 1
 
     @patch("app.load_options")
     def test_chat_new_button_closes_history_sidebar_on_mobile(self, mock_opts, client):
@@ -1245,6 +1271,49 @@ def test_add_match_is_case_and_whitespace_insensitive(client, db):
     _add_wine(client, name="Château Test", quantity="1")
     resp = _add_wine(client, name="  château test ", quantity="1")
     assert json.loads(resp.data)["ok"] is False
+
+
+def test_add_contextual_ai_name_variant_returns_duplicate(client, db):
+    _add_wine(
+        client,
+        name="Raeburn Pinot Noir",
+        year="2023",
+        region="Sonoma County, California",
+        grape="Pinot Noir",
+        quantity="1",
+    )
+    resp = _add_wine(
+        client,
+        name="Raeburn Pinot Noir Sonoma County",
+        year="2023",
+        region="Sonoma County, California",
+        grape="Pinot Noir",
+        quantity="6",
+    )
+    body = json.loads(resp.data)
+    assert body["ok"] is False
+    assert body["duplicate"]["name"] == "Raeburn Pinot Noir"
+    assert body["duplicate"]["quantity"] == 1
+    assert db.execute("SELECT COUNT(*) AS c FROM wines").fetchone()["c"] == 1
+
+
+def test_add_prefix_with_non_context_suffix_is_not_a_match(client, db):
+    _add_wine(
+        client,
+        name="Château Test",
+        year="2018",
+        region="Bordeaux, FR",
+        quantity="1",
+    )
+    resp = _add_wine(
+        client,
+        name="Château Test Reserve",
+        year="2018",
+        region="Bordeaux, FR",
+        quantity="1",
+    )
+    assert json.loads(resp.data)["ok"] is True
+    assert db.execute("SELECT COUNT(*) AS c FROM wines").fetchone()["c"] == 2
 
 
 def test_add_different_year_is_not_a_match(client, db):

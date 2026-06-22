@@ -1,11 +1,14 @@
 import json
 import os
+import re
 import secrets
 import shutil
 import sqlite3
+import unicodedata
 import uuid
 from collections import defaultdict
 from datetime import date, datetime
+from difflib import SequenceMatcher
 from flask import Flask, render_template, request, redirect, url_for, send_from_directory, jsonify, g, session, Response
 from werkzeug.security import generate_password_hash, check_password_hash
 from translations import TRANSLATIONS
@@ -752,10 +755,63 @@ def index():
     )
 
 
-def _find_duplicate_wine(db, name, year, bottle_format):
-    """Return the most-recent wine matching name (trimmed, case-insensitive),
-    year, and bottle_format -- regardless of quantity -- or None."""
-    return db.execute(
+def _normalize_duplicate_name(value):
+    """Normalize AI/user label text enough for duplicate-name comparison."""
+    folded = unicodedata.normalize("NFKD", value or "")
+    ascii_text = folded.encode("ascii", "ignore").decode("ascii")
+    return re.sub(r"\s+", " ", re.sub(r"[^a-z0-9]+", " ", ascii_text.lower())).strip()
+
+
+def _duplicate_name_tokens(value):
+    return tuple(_normalize_duplicate_name(value).split())
+
+
+def _is_contextual_name_variant(left_name, right_name, context_values):
+    """Return True when one wine name is the other plus region/grape/type text."""
+    left = _duplicate_name_tokens(left_name)
+    right = _duplicate_name_tokens(right_name)
+    if not left or not right:
+        return False
+
+    shorter, longer = (left, right) if len(left) <= len(right) else (right, left)
+    if len(shorter) < 2 or tuple(longer[:len(shorter)]) != shorter:
+        return False
+
+    suffix = longer[len(shorter):]
+    if not suffix:
+        return True
+
+    context_tokens = set()
+    for value in context_values:
+        context_tokens.update(_duplicate_name_tokens(value))
+    return bool(context_tokens) and set(suffix).issubset(context_tokens)
+
+
+def _is_fuzzy_duplicate_name(left_name, right_name, context_values=()):
+    left_norm = _normalize_duplicate_name(left_name)
+    right_norm = _normalize_duplicate_name(right_name)
+    if not left_norm or not right_norm:
+        return False
+    if left_norm == right_norm:
+        return True
+    if _is_contextual_name_variant(left_name, right_name, context_values):
+        return True
+
+    left_tokens = _duplicate_name_tokens(left_name)
+    right_tokens = _duplicate_name_tokens(right_name)
+    if not left_tokens or not right_tokens or left_tokens[0] != right_tokens[0]:
+        return False
+
+    return SequenceMatcher(None, left_norm, right_norm).ratio() >= 0.92
+
+
+def _find_duplicate_wine(db, name, year, bottle_format, region=None, grape=None, wine_type=None):
+    """Return the most-recent wine matching name, year, and bottle_format.
+
+    Exact name matches are case-insensitive. A conservative fuzzy fallback catches
+    AI label variants such as appending the same region to the wine name.
+    """
+    exact = db.execute(
         """SELECT id, name, year, bottle_format, quantity, location
            FROM wines
            WHERE TRIM(name) = TRIM(?) COLLATE NOCASE
@@ -765,6 +821,25 @@ def _find_duplicate_wine(db, name, year, bottle_format):
            LIMIT 1""",
         (name, year, bottle_format),
     ).fetchone()
+    if exact:
+        return exact
+
+    submitted_context = (region, grape, wine_type)
+    candidates = db.execute(
+        """SELECT id, name, year, bottle_format, quantity, location, region, grape, type
+           FROM wines
+           WHERE year IS ?
+             AND bottle_format = ?
+           ORDER BY id DESC""",
+        (year, bottle_format),
+    ).fetchall()
+    for candidate in candidates:
+        context_values = submitted_context + (
+            candidate["region"], candidate["grape"], candidate["type"],
+        )
+        if _is_fuzzy_duplicate_name(name, candidate["name"], context_values):
+            return candidate
+    return None
 
 
 @app.route("/add", methods=["POST"])
@@ -802,7 +877,15 @@ def add():
 
     # -- Phase one: unless the user already chose "separate", look for a dup --
     if dup_action != "separate":
-        existing = _find_duplicate_wine(db, name, year, bottle_format)
+        existing = _find_duplicate_wine(
+            db,
+            name,
+            year,
+            bottle_format,
+            request.form.get("region"),
+            request.form.get("grape"),
+            request.form.get("type"),
+        )
         if existing:
             return jsonify({"ok": False, "duplicate": {
                 "id": existing["id"],
