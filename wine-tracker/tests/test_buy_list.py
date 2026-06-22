@@ -225,3 +225,69 @@ class TestRebuy:
     def test_rebuy_unknown_wine_404(self, client):
         resp = client.post("/buy-list/rebuy/99999", headers=AJAX)
         assert resp.status_code == 404
+
+
+class TestMoveToCellar:
+    def _add_item(self, client, db, **extra):
+        data = {"name": "Move Wine", "year": "2018", "type": "Rotwein",
+                "bottle_format": "0.75", "desired_qty": "2"}
+        data.update(extra)
+        return json.loads(client.post("/buy-list/add", data=data, headers=AJAX).data)["id"]
+
+    def _move(self, client, item_id, **form):
+        base = {"name": "Move Wine", "year": "2018", "type": "Rotwein",
+                "bottle_format": "0.75", "quantity": "2", "original_year": "2018"}
+        base.update(form)
+        return client.post(f"/buy-list/move/{item_id}", data=base, headers=AJAX)
+
+    def test_move_creates_new_wine(self, client, db):
+        item_id = self._add_item(client, db)
+        resp = self._move(client, item_id)
+        body = json.loads(resp.data)
+        assert body["ok"] is True and body["restocked"] is False
+        w = db.execute("SELECT quantity FROM wines WHERE id=?", (body["wine_id"],)).fetchone()
+        assert w[0] == 2
+        assert db.execute("SELECT COUNT(*) FROM buy_list WHERE id=?", (item_id,)).fetchone()[0] == 0
+        action = db.execute(
+            "SELECT action FROM timeline WHERE wine_id=? ORDER BY id DESC LIMIT 1", (body["wine_id"],)
+        ).fetchone()[0]
+        assert action == "added"
+
+    def test_move_restocks_existing(self, client, db):
+        db.execute(
+            "INSERT INTO wines (name, year, type, quantity, bottle_format) VALUES (?,?,?,?,?)",
+            ("Move Wine", 2018, "Rotwein", 0, 0.75),
+        )
+        db.commit()
+        existing_id = db.execute("SELECT id FROM wines WHERE name='Move Wine'").fetchone()[0]
+        item_id = self._add_item(client, db)
+        resp = self._move(client, item_id)
+        body = json.loads(resp.data)
+        assert body["ok"] is True and body["restocked"] is True
+        assert body["wine_id"] == existing_id
+        assert db.execute("SELECT quantity FROM wines WHERE id=?", (existing_id,)).fetchone()[0] == 2
+        action = db.execute(
+            "SELECT action FROM timeline WHERE wine_id=? ORDER BY id DESC LIMIT 1", (existing_id,)
+        ).fetchone()[0]
+        assert action == "restocked"
+
+    def test_move_same_year_does_not_call_ai(self, client, db):
+        item_id = self._add_item(client, db)
+        with patch("app._analyze_wine_from_context") as mock_ai:
+            self._move(client, item_id, year="2018", original_year="2018")
+            mock_ai.assert_not_called()
+
+    def test_move_changed_year_calls_ai_when_configured(self, client, db, monkeypatch):
+        import app as wine_app
+        opts = dict(wine_app.HA_OPTIONS)
+        opts.update({"ai_provider": "anthropic", "anthropic_api_key": "sk-test"})
+        monkeypatch.setattr(wine_app, "HA_OPTIONS", opts)
+        item_id = self._add_item(client, db)
+        with patch("app._is_ai_configured", return_value=True), \
+             patch("app._load_image_b64", return_value=(None, "image/jpeg")), \
+             patch("app._analyze_wine_from_context", return_value={"drink_from": 2030, "drink_until": 2040}) as mock_ai:
+            resp = self._move(client, item_id, year="2020", original_year="2018")
+            mock_ai.assert_called_once()
+        body = json.loads(resp.data)
+        w = db.execute("SELECT drink_from, drink_until FROM wines WHERE id=?", (body["wine_id"],)).fetchone()
+        assert w[0] == 2030 and w[1] == 2040
