@@ -16,6 +16,7 @@ from export_import import (
     build_export_zip, export_filename,
     parse_import_file, match_wines, apply_import, ImportError as WineImportError,
 )
+import api_queries
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", secrets.token_hex(32))
@@ -3145,6 +3146,14 @@ def api_summary():
         for r in rows
     ]
     return jsonify({"total_bottles": total, "by_type": by_type})
+
+
+@app.route("/api/stats")
+def api_stats():
+    db = get_db()
+    data = api_queries.compute_stats(db, datetime.now().year)
+    data["currency"] = HA_OPTIONS.get("currency", "CHF")
+    return jsonify(ok=True, **data)
 
 
 # ── Main ──────────────────────────────────────────────────────────────────────

@@ -65,3 +65,75 @@ def serialize_wine(row, full=False):
         for key in _AI_JSON_FIELDS:
             d.pop(key, None)
     return d
+
+
+def compute_stats(db, current_year):
+    """Aggregate cellar statistics. Returns a flat dict (no envelope, no currency)."""
+    totals = db.execute(
+        "SELECT COALESCE(SUM(quantity), 0) AS bottles, COUNT(*) AS wines FROM wines"
+    ).fetchone()
+    out_of_stock = db.execute(
+        "SELECT COUNT(*) FROM wines WHERE quantity = 0"
+    ).fetchone()[0]
+    liters = db.execute(
+        "SELECT COALESCE(SUM(quantity * COALESCE(bottle_format, 0.75)), 0) FROM wines"
+    ).fetchone()[0]
+    value = db.execute(
+        "SELECT COALESCE(SUM(quantity * price), 0) AS total, AVG(price) AS avg "
+        "FROM wines WHERE price IS NOT NULL AND price > 0"
+    ).fetchone()
+    avg_age = db.execute(
+        "SELECT AVG(? - year) FROM wines WHERE year IS NOT NULL AND year > 0",
+        (current_year,),
+    ).fetchone()[0]
+    avg_rating = db.execute(
+        "SELECT AVG(rating) FROM wines WHERE rating > 0"
+    ).fetchone()[0]
+
+    by_type = [
+        {"type": type_en(r["type"]), "bottles": r["bottles"], "wines": r["wines"]}
+        for r in db.execute(
+            "SELECT type, COALESCE(SUM(quantity), 0) AS bottles, COUNT(*) AS wines "
+            "FROM wines WHERE type IS NOT NULL AND type != '' "
+            "GROUP BY type ORDER BY bottles DESC"
+        ).fetchall()
+    ]
+    by_region = [
+        {"region": r["region"], "bottles": r["bottles"]}
+        for r in db.execute(
+            "SELECT region, COALESCE(SUM(quantity), 0) AS bottles "
+            "FROM wines WHERE region IS NOT NULL AND region != '' "
+            "GROUP BY region ORDER BY bottles DESC"
+        ).fetchall()
+    ]
+    by_grape = [
+        {"grape": r["grape"], "bottles": r["bottles"]}
+        for r in db.execute(
+            "SELECT grape, COALESCE(SUM(quantity), 0) AS bottles "
+            "FROM wines WHERE grape IS NOT NULL AND grape != '' "
+            "GROUP BY grape ORDER BY bottles DESC"
+        ).fetchall()
+    ]
+    by_decade = [
+        {"decade": int(r["decade"]), "bottles": r["bottles"]}
+        for r in db.execute(
+            "SELECT (year / 10) * 10 AS decade, COALESCE(SUM(quantity), 0) AS bottles "
+            "FROM wines WHERE year IS NOT NULL AND year > 0 "
+            "GROUP BY decade ORDER BY decade ASC"
+        ).fetchall()
+    ]
+
+    return {
+        "total_bottles": totals["bottles"],
+        "distinct_wines": totals["wines"],
+        "out_of_stock": out_of_stock,
+        "total_liters": round(liters, 2),
+        "total_value": round(value["total"], 2),
+        "avg_price": round(value["avg"], 2) if value["avg"] is not None else 0.0,
+        "avg_age": round(avg_age, 1) if avg_age is not None else 0.0,
+        "avg_rating": round(avg_rating, 1) if avg_rating is not None else 0.0,
+        "by_type": by_type,
+        "by_region": by_region,
+        "by_grape": by_grape,
+        "by_decade": by_decade,
+    }
