@@ -874,6 +874,8 @@ def buy_list_edit(item_id):
         return jsonify({"ok": False, "error": "name_required"}), 400
     # Keep the existing image if no new one was provided.
     image = vals["image"] or item["image"]
+    if vals["image"] and item["image"] and vals["image"] != item["image"]:
+        _delete_buy_list_image_if_unused(db, item["image"], item_id)
     db.execute(
         """UPDATE buy_list SET name=?, year=?, type=?, region=?, grape=?, price=?,
            notes=?, image=?, bottle_format=?, desired_qty=?,

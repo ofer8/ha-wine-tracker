@@ -117,3 +117,81 @@ class TestBuyListEditDelete:
         resp = client.post(f"/buy-list/delete/{item_id}", headers=AJAX)
         assert json.loads(resp.data)["ok"] is True
         assert db.execute("SELECT COUNT(*) FROM buy_list WHERE id=?", (item_id,)).fetchone()[0] == 0
+
+
+def _jpeg_upload(name="x.jpg"):
+    buf = io.BytesIO()
+    from PIL import Image
+    Image.new("RGB", (12, 12), (120, 30, 30)).save(buf, "JPEG")
+    buf.seek(0)
+    return (buf, name)
+
+
+class TestBuyListEditImage:
+    def test_edit_replacing_image_deletes_old_unused(self, client, db, upload_dir):
+        # Add an item with an image.
+        resp = client.post(
+            "/buy-list/add",
+            data={"name": "img", "desired_qty": "1", "image": _jpeg_upload("a.jpg")},
+            headers=AJAX,
+        )
+        body = json.loads(resp.data)
+        assert body["ok"] is True
+        item_id = body["id"]
+
+        row = db.execute("SELECT image FROM buy_list WHERE id=?", (item_id,)).fetchone()
+        old_image = row["image"]
+        assert old_image, "Expected image to be saved"
+        old_path = os.path.join(upload_dir, old_image)
+        assert os.path.exists(old_path), "Old image file should exist before edit"
+
+        # Edit with a new image.
+        resp2 = client.post(
+            f"/buy-list/edit/{item_id}",
+            data={"name": "img", "desired_qty": "1", "image": _jpeg_upload("b.jpg")},
+            headers=AJAX,
+        )
+        assert json.loads(resp2.data)["ok"] is True
+
+        # Old file must be deleted; new file must exist; DB must reflect new name.
+        assert not os.path.exists(old_path), "Old image file should be deleted after replacement"
+        row2 = db.execute("SELECT image FROM buy_list WHERE id=?", (item_id,)).fetchone()
+        new_image = row2["image"]
+        assert new_image != old_image, "DB should store the new image filename"
+        assert os.path.exists(os.path.join(upload_dir, new_image)), "New image file should exist"
+
+    def test_edit_keeps_shared_image(self, client, db, upload_dir):
+        # Create a shared image file on disk.
+        shared_filename = "shared.jpg"
+        shared_path = os.path.join(upload_dir, shared_filename)
+        open(shared_path, "w").close()
+
+        # Insert two buy_list rows that both reference the same image.
+        db.execute(
+            "INSERT INTO buy_list (name, desired_qty, image) VALUES (?, ?, ?)",
+            ("SharedWine1", 1, shared_filename),
+        )
+        db.execute(
+            "INSERT INTO buy_list (name, desired_qty, image) VALUES (?, ?, ?)",
+            ("SharedWine2", 1, shared_filename),
+        )
+        db.commit()
+
+        first_id = db.execute(
+            "SELECT id FROM buy_list WHERE name='SharedWine1'"
+        ).fetchone()["id"]
+
+        # Edit the first row with a new image.
+        resp = client.post(
+            f"/buy-list/edit/{first_id}",
+            data={"name": "SharedWine1", "desired_qty": "1", "image": _jpeg_upload("c.jpg")},
+            headers=AJAX,
+        )
+        assert json.loads(resp.data)["ok"] is True
+
+        # shared.jpg must still exist because SharedWine2 still references it.
+        assert os.path.exists(shared_path), "Shared image must not be deleted while still referenced"
+
+    def test_edit_missing_item_404(self, client):
+        resp = client.post("/buy-list/edit/99999", data={"name": "x"}, headers=AJAX)
+        assert resp.status_code == 404
