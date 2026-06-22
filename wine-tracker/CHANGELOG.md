@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.12.0
+
+- **Extended read-only REST API** - new JSON endpoints for Home Assistant dashboards & automations: `/api/stats` (totals, liters, value, average age/rating, breakdowns by type/region/grape/decade), `/api/drink-window` (wines bucketed ready / too young / past peak, with year-boundary counts for notifications), `/api/wines` (the filterable, sortable collection) and `/api/wines/<id>` (single-wine detail). All use English wine-type labels regardless of UI language. The existing `/api/summary` is unchanged. Resolves the "Extended REST API" roadmap item.
+- **Tests** - added 32 tests for the new API query helpers and routes.
+
 ## 1.11.0
 
 - **Duplicate detection when adding a wine** - the add-wine flow now detects when a bottle closely matches one already in your cellar and lets you merge it into the existing entry or keep it as a separate row, with a confirmation dialog localised in all 7 languages.

@@ -16,6 +16,7 @@ from export_import import (
     build_export_zip, export_filename,
     parse_import_file, match_wines, apply_import, ImportError as WineImportError,
 )
+import api_queries
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", secrets.token_hex(32))
@@ -143,7 +144,7 @@ def _ssl_verify():
         return True
 
 
-APP_VERSION = "1.11.0"
+APP_VERSION = "1.12.0"
 
 HA_OPTIONS = load_options()
 
@@ -3145,6 +3146,35 @@ def api_summary():
         for r in rows
     ]
     return jsonify({"total_bottles": total, "by_type": by_type})
+
+
+@app.route("/api/stats")
+def api_stats():
+    db = get_db()
+    data = api_queries.compute_stats(db, datetime.now().year)
+    data["currency"] = HA_OPTIONS.get("currency", "CHF")
+    return jsonify(ok=True, **data)
+
+
+@app.route("/api/drink-window")
+def api_drink_window():
+    db = get_db()
+    return jsonify(ok=True, **api_queries.compute_drink_window(db, datetime.now().year))
+
+
+@app.route("/api/wines")
+def api_wines_list():
+    db = get_db()
+    return jsonify(ok=True, **api_queries.query_wines(db, request.args))
+
+
+@app.route("/api/wines/<int:wine_id>")
+def api_wines_detail(wine_id):
+    db = get_db()
+    row = db.execute("SELECT * FROM wines WHERE id = ?", (wine_id,)).fetchone()
+    if not row:
+        return jsonify(ok=False, error="not_found"), 404
+    return jsonify(ok=True, wine=api_queries.serialize_wine(row, full=True))
 
 
 # ── Main ──────────────────────────────────────────────────────────────────────

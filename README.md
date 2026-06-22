@@ -277,26 +277,77 @@ All data (SQLite database + photos) is stored under `/share/wine-tracker/` - pre
 
 ## Home Assistant Sensor (Optional)
 
+The add-on exposes read-only JSON endpoints for dashboards and automations. All return
+`{"ok": true, ...}` and use **English** wine-type labels regardless of the UI language.
+
+| Endpoint | Returns |
+|----------|---------|
+| `/api/summary` | total bottle count + by-type breakdown (legacy, unchanged) |
+| `/api/stats` | totals, liters, value, average age/rating, breakdowns by type/region/grape/decade |
+| `/api/drink-window` | wines bucketed `ready` / `too_young` / `past_peak` / `unknown`, plus year-boundary counts |
+| `/api/wines` | the collection as JSON, filterable & sortable (`?type=`, `?region=`, `?in_stock=true`, `?sort=year&order=desc`, `?limit=`) |
+| `/api/wines/<id>` | one wine, full detail incl. maturity / taste / pairings |
+
+### Stock & value sensor
+
 ```yaml
 # configuration.yaml
 sensor:
   - platform: rest
-    name: "Wine Stock"
-    resource: "http://localhost:5050/api/summary"
+    name: "Wine Cellar"
+    resource: "http://localhost:5050/api/stats"
     value_template: "{{ value_json.total_bottles }}"
     unit_of_measurement: "bottles"
     json_attributes:
+      - total_liters
+      - total_value
+      - avg_age
+      - avg_rating
       - by_type
     scan_interval: 3600
 ```
 
-This creates a `sensor.wine_stock` entity you can use on dashboards or in automations.
+> **Note:** the `by_type` / `by_region` / `by_grape` / `by_decade` attributes are JSON lists — use a template sensor to extract individual values for a dashboard.
+
+### Drink-window sensor + notification
+
+```yaml
+# configuration.yaml
+sensor:
+  - platform: rest
+    name: "Wines Ready to Drink"
+    resource: "http://localhost:5050/api/drink-window"
+    value_template: "{{ value_json.ready_now }}"
+    unit_of_measurement: "wines"
+    json_attributes:
+      - entering_this_year
+      - leaving_this_year
+    scan_interval: 86400
+
+automation:
+  - alias: "Wine entering its drink window"
+    trigger:
+      - platform: numeric_state
+        entity_id: sensor.wines_ready_to_drink
+        attribute: entering_this_year
+        above: 0
+    action:
+      - service: notify.notify
+        data:
+          message: >
+            {{ state_attr('sensor.wines_ready_to_drink', 'entering_this_year') }}
+            wine(s) just entered their optimal drinking window.
+```
+
+> **Note (standalone Docker):** when `AUTH_ENABLED=true`, these endpoints require a logged-in
+> session, so an unauthenticated REST sensor receives `401`. In the Home Assistant add-on
+> (the default), access is gated by HA and the sensors work as shown.
 
 ## License
 
 MIT
 
-[version-badge]: https://img.shields.io/badge/version-v1.11.0-blue.svg
+[version-badge]: https://img.shields.io/badge/version-v1.12.0-blue.svg
 [stage-badge]: https://img.shields.io/badge/project%20stage-stable-brightgreen.svg
 [maintained-badge]: https://img.shields.io/badge/maintained-yes-brightgreen.svg
 [license-badge]: https://img.shields.io/badge/license-MIT-green.svg
