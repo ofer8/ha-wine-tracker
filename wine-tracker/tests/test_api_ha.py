@@ -76,6 +76,13 @@ def test_serialize_wine_full_parses_ai_blobs(db):
     assert out["type"] == "White Wine"
     assert out["maturity_data"] == {"k": 1}        # parsed to object, not string
     assert out["food_pairings"] == ["cheese"]
+    assert out["taste_profile"] is None        # unset AI field stays None in full mode
+
+
+def test_serialize_wine_full_malformed_json_becomes_none(db):
+    wid = _insert(db, name="A", maturity_data="{not valid json")
+    out = api_queries.serialize_wine(_get_row(db, wid), full=True)
+    assert out["maturity_data"] is None
 
 
 def test_serialize_wine_image_path_none_when_no_image(db):
