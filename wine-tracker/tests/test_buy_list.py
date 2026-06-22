@@ -104,6 +104,13 @@ class TestBuyListAdd:
         resp = client.post("/buy-list/add", data={"desired_qty": "1"}, headers=AJAX)
         assert resp.status_code == 400
 
+    def test_add_maps_cellar_quantity_to_desired_qty(self, client, db):
+        # The shared cellar modal submits "quantity"; the wishlist stores it as desired_qty.
+        resp = client.post("/buy-list/add", data={"name": "Q Wine", "quantity": "3"}, headers=AJAX)
+        body = json.loads(resp.data)
+        row = db.execute("SELECT desired_qty FROM buy_list WHERE id=?", (body["id"],)).fetchone()
+        assert row[0] == 3
+
 
 class TestBuyListEditDelete:
     def _add(self, client, **extra):
@@ -300,17 +307,24 @@ class TestMoveToCellar:
 
 
 class TestWishlistModal:
-    def test_add_modal_markup_present(self, client):
+    def test_uses_shared_cellar_add_modal(self, client):
+        """Wishlist add reuses the cellar add/edit modal with a wishlist destination."""
         resp = client.get("/buy-list")
-        assert b'id="wishlistForm"' in resp.data
-        assert b'id="blDesiredQty"' in resp.data
-        assert b'openWishlistAdd' in resp.data
+        assert b'id="wineModal"' in resp.data             # cellar add/edit modal included
+        assert b'function submitToWishlist' in resp.data  # the "Add to Wishlist" action
+        assert b'openWineModal(' in resp.data             # + Add opens the shared modal
 
-    def test_scan_control_present_when_ai_enabled(self, client, monkeypatch):
+    def test_wishlist_detail_is_editable(self, client):
+        """Wishlist rows open the detail view whose Edit targets the buy list."""
+        resp = client.get("/buy-list")
+        assert b'viewWishlistItem' in resp.data
+        assert b'function editFromView' in resp.data
+        assert b"target: 'buy_list'" in resp.data
+
+    def test_ai_recognition_available_when_ai_enabled(self, client, monkeypatch):
         import app as wine_app
         monkeypatch.setattr(wine_app, "_is_ai_configured", lambda opts: True)
         resp = client.get("/buy-list")
-        assert b'blScanInput' in resp.data
         assert b'/api/analyze-wine' in resp.data
 
 

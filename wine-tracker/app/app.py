@@ -823,7 +823,7 @@ def _buy_list_form_values():
         "notes": request.form.get("notes", "").strip() or None,
         "image": image,
         "bottle_format": float(bottle_format_raw) if bottle_format_raw else 0.75,
-        "desired_qty": int(request.form.get("desired_qty", 1) or 1),
+        "desired_qty": int(request.form.get("desired_qty") or request.form.get("quantity") or 1),
         "drink_from": request.form.get("drink_from") or None,
         "drink_until": request.form.get("drink_until") or None,
         "maturity_data": request.form.get("maturity_data", "").strip() or None,

@@ -36,20 +36,19 @@
   </div>
 
   <section id="blPanelWishlist" class="bl-panel">
-    <button class="btn-primary" onclick="openWishlistAdd()"><i class="mdi mdi-plus"></i> {{ t.btn_add_to_wishlist }}</button>
+    <button class="btn-primary" onclick="openWineModal()"><i class="mdi mdi-plus"></i> {{ t.btn_add_to_wishlist }}</button>
     {% if items %}
     <div class="bl-grid">
       {% for it in items %}
       <div class="bl-card" data-id="{{ it.id }}">
-        {% if it.image %}<img src="{{ ingress }}/uploads/{{ it.image }}" alt="" class="bl-thumb">{% endif %}
-        <div class="bl-card-body">
+        {% if it.image %}<img src="{{ ingress }}/uploads/{{ it.image }}" alt="" class="bl-thumb" style="cursor:pointer" onclick='viewWishlistItem({{ it|tojson }})'>{% endif %}
+        <div class="bl-card-body" style="cursor:pointer" onclick='viewWishlistItem({{ it|tojson }})'>
           <div class="bl-name">{{ it.name }}{% if it.year %} ({{ it.year }}){% endif %}</div>
           <div class="bl-meta">{{ it.region or '' }}{% if it.grape %} - {{ it.grape }}{% endif %}</div>
           <div class="bl-meta">{% if it.price %}{{ it.price }} {{ currency }}{% endif %} - {{ t.label_desired_qty }}: {{ it.desired_qty }}</div>
         </div>
         <div class="bl-actions">
           <button class="btn-small" onclick='openMoveToCellar({{ it|tojson }})'>{{ t.btn_move_to_cellar }}</button>
-          <button class="btn-small" onclick='openWishlistEdit({{ it|tojson }})'><i class="mdi mdi-pencil"></i></button>
           <button class="btn-small btn-danger" onclick="removeWishlistItem({{ it.id }})"><i class="mdi mdi-close"></i></button>
         </div>
       </div>
@@ -106,10 +105,27 @@ function viewOutOfStock(id) {
     .then(function(data){ if (data.ok) openViewModal(data.wine.id, data.wine, true); })
     .catch(function(){});
 }
+// Wishlist item: parse stored enrichment JSON to objects, map desired_qty -> quantity
+// (so the shared detail/edit modal reads them), then open the EDITABLE detail view.
+function viewWishlistItem(item) {
+  var w = {};
+  for (var k in item) { if (item.hasOwnProperty(k)) w[k] = item[k]; }
+  ['maturity_data','taste_profile','food_pairings'].forEach(function(k){
+    if (typeof w[k] === 'string' && w[k]) { try { w[k] = JSON.parse(w[k]); } catch(e) { w[k] = null; } }
+  });
+  w.quantity = item.desired_qty;
+  openViewModal(w.id, w, false);  // editable: Edit button enabled
+}
+// On the buy-list page the view modal's Edit always edits a wishlist item.
+function editFromView() {
+  closeModal('viewModal');
+  openWineModal(window._viewWineId, window._viewWineData, { target: 'buy_list' });
+}
 </script>
 {% include '_wine_view_modal.html' %}
 {% include '_wine_view_extras.html' %}
 {% include '_wine_view_script.html' %}
+{% include '_wine_edit_modal.html' %}
 {% include "_buy_list_modals.html" %}
 </body>
 </html>
