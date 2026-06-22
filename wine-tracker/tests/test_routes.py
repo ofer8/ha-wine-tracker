@@ -1276,3 +1276,12 @@ def test_add_merge_restocks_empty_bottle(client, db):
     _add_wine(client, quantity="2", dup_action="merge", dup_target_id=str(target_id))
     qty = db.execute("SELECT quantity FROM wines WHERE id=?", (target_id,)).fetchone()["quantity"]
     assert qty == 2
+
+
+def test_translations_have_dup_detect_keys():
+    import translations
+    keys = ["dup_detect_title", "dup_detect_body", "dup_detect_merge",
+            "dup_detect_separate", "dup_detect_cancel"]
+    for lang, d in translations.TRANSLATIONS.items():
+        for k in keys:
+            assert k in d, f"{lang} missing {k}"

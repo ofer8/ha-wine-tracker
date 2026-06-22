@@ -207,6 +207,13 @@ TRANSLATIONS = {
     "dup_hint": "Alle anderen Felder (Typ, Region, Bewertung, Notizen, Foto) werden übernommen.",
     "btn_create_dup": "Duplikat anlegen",
 
+    # Duplicate detection modal
+    "dup_detect_title": "Wein bereits vorhanden",
+    "dup_detect_body": "Du hast bereits {qty}x {name} {year} ({format}l) in {location}.",
+    "dup_detect_merge": "Zum vorhandenen hinzufügen (jetzt {n})",
+    "dup_detect_separate": "Als separaten Eintrag hinzufügen",
+    "dup_detect_cancel": "Abbrechen",
+
     # Empty states
     "empty_no_wines": "Noch keine Weine erfasst.",
     "empty_add_first": "Füge deinen ersten Wein hinzu!",
@@ -554,6 +561,13 @@ TRANSLATIONS = {
     "dup_hint": "All other fields (type, region, rating, notes, photo) will be copied.",
     "btn_create_dup": "Create duplicate",
 
+    # Duplicate detection modal
+    "dup_detect_title": "Wine already in cellar",
+    "dup_detect_body": "You already have {qty}x {name} {year} ({format}l) in {location}.",
+    "dup_detect_merge": "Add to existing (now {n})",
+    "dup_detect_separate": "Add as separate entry",
+    "dup_detect_cancel": "Cancel",
+
     "empty_no_wines": "No wines recorded yet.",
     "empty_add_first": "Add your first wine!",
     "empty_no_results": "No wines found.",
@@ -896,6 +910,13 @@ TRANSLATIONS = {
     "dup_qty": "Quantité",
     "dup_hint": "Tous les autres champs (type, région, note, notes, photo) seront copiés.",
     "btn_create_dup": "Créer le duplicata",
+
+    # Duplicate detection modal
+    "dup_detect_title": "Vin déjà en cave",
+    "dup_detect_body": "Vous avez déjà {qty}x {name} {year} ({format}l) dans {location}.",
+    "dup_detect_merge": "Ajouter à l'existant (désormais {n})",
+    "dup_detect_separate": "Ajouter comme entrée séparée",
+    "dup_detect_cancel": "Annuler",
 
     "empty_no_wines": "Aucun vin enregistré.",
     "empty_add_first": "Ajoutez votre premier vin !",
@@ -1240,6 +1261,13 @@ TRANSLATIONS = {
     "dup_hint": "Tutti gli altri campi (tipo, regione, valutazione, note, foto) verranno copiati.",
     "btn_create_dup": "Crea duplicato",
 
+    # Duplicate detection modal
+    "dup_detect_title": "Vino già in cantina",
+    "dup_detect_body": "Hai già {qty}x {name} {year} ({format}l) in {location}.",
+    "dup_detect_merge": "Aggiungi all'esistente (ora {n})",
+    "dup_detect_separate": "Aggiungi come voce separata",
+    "dup_detect_cancel": "Annulla",
+
     "empty_no_wines": "Nessun vino registrato.",
     "empty_add_first": "Aggiungi il tuo primo vino!",
     "empty_no_results": "Nessun vino trovato.",
@@ -1582,6 +1610,13 @@ TRANSLATIONS = {
     "dup_qty": "Cantidad",
     "dup_hint": "Todos los demás campos (tipo, región, valoración, notas, foto) se copiarán.",
     "btn_create_dup": "Crear duplicado",
+
+    # Duplicate detection modal
+    "dup_detect_title": "Vino ya en la bodega",
+    "dup_detect_body": "Ya tienes {qty}x {name} {year} ({format}l) en {location}.",
+    "dup_detect_merge": "Añadir al existente (ahora {n})",
+    "dup_detect_separate": "Añadir como entrada separada",
+    "dup_detect_cancel": "Cancelar",
 
     "empty_no_wines": "No hay vinos registrados.",
     "empty_add_first": "¡Añade tu primer vino!",
@@ -1926,6 +1961,13 @@ TRANSLATIONS = {
     "dup_hint": "Todos os outros campos (tipo, região, avaliação, notas, foto) serão copiados.",
     "btn_create_dup": "Criar duplicata",
 
+    # Duplicate detection modal
+    "dup_detect_title": "Vinho já na adega",
+    "dup_detect_body": "Você já tem {qty}x {name} {year} ({format}l) em {location}.",
+    "dup_detect_merge": "Adicionar ao existente (agora {n})",
+    "dup_detect_separate": "Adicionar como entrada separada",
+    "dup_detect_cancel": "Cancelar",
+
     "empty_no_wines": "Nenhum vinho registrado.",
     "empty_add_first": "Adicione seu primeiro vinho!",
     "empty_no_results": "Nenhum vinho encontrado.",
@@ -2268,6 +2310,13 @@ TRANSLATIONS = {
     "dup_qty": "Aantal",
     "dup_hint": "Alle andere velden (type, regio, beoordeling, notities, foto) worden gekopieerd.",
     "btn_create_dup": "Duplicaat maken",
+
+    # Duplicate detection modal
+    "dup_detect_title": "Wijn al in kelder",
+    "dup_detect_body": "Je hebt al {qty}x {name} {year} ({format}l) in {location}.",
+    "dup_detect_merge": "Aan bestaande toevoegen (nu {n})",
+    "dup_detect_separate": "Als aparte vermelding toevoegen",
+    "dup_detect_cancel": "Annuleren",
 
     "empty_no_wines": "Nog geen wijnen geregistreerd.",
     "empty_add_first": "Voeg je eerste wijn toe!",
