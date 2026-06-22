@@ -12,10 +12,9 @@ var BOTTLE_FORMATS = {
 };
 
 function escapeHtml(s) {
-  if (!s) return '';
-  var d = document.createElement('div');
-  d.appendChild(document.createTextNode(s));
-  return d.innerHTML;
+  return String(s == null ? '' : s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
 function openModal(id) { document.getElementById(id).classList.add('open'); }
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
@@ -60,7 +59,7 @@ function openViewModal(id, wine, readOnly) {
 
   // Meta: year + region
   var meta = [];
-  if (w.year) meta.push('<span>' + w.year + '</span>');
+  if (w.year) meta.push('<span>' + escapeHtml(w.year) + '</span>');
   if (w.region) meta.push('<span>' + escapeHtml(w.region) + '</span>');
   if (meta.length) html += '<div class="view-meta">' + meta.join('') + '</div>';
 
@@ -89,7 +88,7 @@ function openViewModal(id, wine, readOnly) {
     details += viewRow('mdi-calendar-range', T.view_drink_window || 'Drink window', window_str);
   }
   if (w.location) details += viewRow('mdi-map-marker', T.label_location || 'Location', w.location);
-  if (w.vivino_id) {
+  if (w.vivino_id && /^[0-9]+$/.test(String(w.vivino_id))) {
     details += '<div class="view-row"><i class="mdi mdi-open-in-new"></i>'
              + '<span class="view-label">Vivino</span>'
              + '<a href="https://www.vivino.com/w/' + w.vivino_id + '" target="_blank" rel="noopener" class="view-vivino-link view-value">vivino.com</a></div>';
