@@ -752,9 +752,68 @@ def index():
     )
 
 
+def _find_duplicate_wine(db, name, year, bottle_format):
+    """Return the most-recent wine matching name (trimmed, case-insensitive),
+    year, and bottle_format -- regardless of quantity -- or None."""
+    return db.execute(
+        """SELECT id, name, year, bottle_format, quantity, location
+           FROM wines
+           WHERE TRIM(name) = TRIM(?) COLLATE NOCASE
+             AND year IS ?
+             AND bottle_format = ?
+           ORDER BY id DESC
+           LIMIT 1""",
+        (name, year, bottle_format),
+    ).fetchone()
+
+
 @app.route("/add", methods=["POST"])
 def add():
     db = get_db()
+    dup_action = request.form.get("dup_action", "").strip()
+
+    # Normalize the same values the matcher and INSERT use.
+    name = request.form["name"].strip()
+    year = request.form.get("year") or None
+    bottle_format_raw = request.form.get("bottle_format", "").strip()
+    bottle_format = float(bottle_format_raw) if bottle_format_raw else 0.75
+    qty = int(request.form.get("quantity", 1))
+
+    # -- Merge: bump an existing wine's quantity, log a restock --
+    if dup_action == "merge":
+        target_id = request.form.get("dup_target_id", "").strip()
+        target = db.execute(
+            "SELECT id, quantity FROM wines WHERE id=?", (target_id,)
+        ).fetchone() if target_id else None
+        if not target:
+            return jsonify({"ok": False, "error": "merge_target_missing"}), 400
+        db.execute(
+            "UPDATE wines SET quantity = quantity + ? WHERE id=?",
+            (qty, target["id"]),
+        )
+        db.execute(
+            "INSERT INTO timeline (wine_id, action, quantity, timestamp) VALUES (?,?,?,?)",
+            (target["id"], "restocked", qty, datetime.now().isoformat()),
+        )
+        db.commit()
+        if is_ajax():
+            return jsonify({"ok": True, "wine": wine_json(target["id"]), "stats": stats_json()})
+        return redirect(g.get("ingress", "") + url_for("index"))
+
+    # -- Phase one: unless the user already chose "separate", look for a dup --
+    if dup_action != "separate":
+        existing = _find_duplicate_wine(db, name, year, bottle_format)
+        if existing:
+            return jsonify({"ok": False, "duplicate": {
+                "id": existing["id"],
+                "name": existing["name"],
+                "year": existing["year"],
+                "bottle_format": existing["bottle_format"],
+                "quantity": existing["quantity"],
+                "location": existing["location"],
+            }})
+
+    # -- Insert (no match, or user chose "separate") --
     image = save_image(request.files.get("image"))
     # If no new image uploaded but AI already saved one, use that
     if not image:
@@ -763,7 +822,6 @@ def add():
             image = ai_img
     price_raw = request.form.get("price", "").strip()
     vivino_raw = request.form.get("vivino_id", "").strip()
-    bottle_format_raw = request.form.get("bottle_format", "").strip()
     maturity_data_raw = request.form.get("maturity_data", "").strip() or None
     taste_profile_raw = request.form.get("taste_profile", "").strip() or None
     food_pairings_raw = request.form.get("food_pairings", "").strip() or None
@@ -774,11 +832,11 @@ def add():
             maturity_data, taste_profile, food_pairings)
            VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
         (
-            request.form["name"].strip(),
-            request.form.get("year") or None,
+            name,
+            year,
             request.form.get("type"),
             request.form.get("region", "").strip(),
-            int(request.form.get("quantity", 1)),
+            qty,
             int(request.form.get("rating", 0)),
             request.form.get("notes", "").strip(),
             image,
@@ -790,7 +848,7 @@ def add():
             request.form.get("location", "").strip() or None,
             request.form.get("grape", "").strip() or None,
             int(vivino_raw) if vivino_raw else None,
-            float(bottle_format_raw) if bottle_format_raw else 0.75,
+            bottle_format,
             maturity_data_raw,
             taste_profile_raw,
             food_pairings_raw,
@@ -798,8 +856,6 @@ def add():
     )
     db.commit()
     new_id = cur.lastrowid
-    # Log the addition
-    qty = int(request.form.get("quantity", 1))
     db.execute(
         "INSERT INTO timeline (wine_id, action, quantity, timestamp) VALUES (?,?,?,?)",
         (new_id, "added", qty, datetime.now().isoformat()),
