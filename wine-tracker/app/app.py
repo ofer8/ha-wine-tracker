@@ -3138,7 +3138,13 @@ def api_summary():
         "SELECT type, COUNT(*) as cnt, SUM(quantity) as total FROM wines GROUP BY type"
     ).fetchall()
     total = db.execute("SELECT SUM(quantity) FROM wines WHERE quantity > 0").fetchone()[0] or 0
-    return jsonify({"total_bottles": total, "by_type": [dict(r) for r in rows]})
+    # Expose English wine-type labels so HA sensors read the same regardless of UI language.
+    en = TRANSLATIONS["en"]
+    by_type = [
+        {**dict(r), "type": en.get(f"wine_type_{r['type']}", r["type"])}
+        for r in rows
+    ]
+    return jsonify({"total_bottles": total, "by_type": by_type})
 
 
 # ── Main ──────────────────────────────────────────────────────────────────────
