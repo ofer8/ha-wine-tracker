@@ -195,3 +195,33 @@ class TestBuyListEditImage:
     def test_edit_missing_item_404(self, client):
         resp = client.post("/buy-list/edit/99999", data={"name": "x"}, headers=AJAX)
         assert resp.status_code == 404
+
+
+class TestRebuy:
+    def test_rebuy_copies_wine_into_wishlist(self, client, db):
+        db.execute(
+            """INSERT INTO wines (name, year, type, region, grape, quantity, price,
+               bottle_format, drink_from, drink_until, maturity_data)
+               VALUES (?,?,?,?,?,?,?,?,?,?,?)""",
+            ("Gone Wine", 2018, "Rotwein", "Rioja", "Tempranillo", 0, 25.0, 0.75,
+             2022, 2030, '{"peak": [2024, 2028]}'),
+        )
+        db.commit()
+        wine_id = db.execute("SELECT id FROM wines WHERE name='Gone Wine'").fetchone()[0]
+        resp = client.post(f"/buy-list/rebuy/{wine_id}", headers=AJAX)
+        body = json.loads(resp.data)
+        assert body["ok"] is True
+        row = db.execute(
+            "SELECT name, year, region, grape, price, desired_qty, drink_from, maturity_data FROM buy_list WHERE id=?",
+            (body["id"],),
+        ).fetchone()
+        assert row["name"] == "Gone Wine"
+        assert row["year"] == 2018
+        assert row["grape"] == "Tempranillo"
+        assert row["desired_qty"] == 1
+        assert row["drink_from"] == 2022
+        assert row["maturity_data"] == '{"peak": [2024, 2028]}'
+
+    def test_rebuy_unknown_wine_404(self, client):
+        resp = client.post("/buy-list/rebuy/99999", headers=AJAX)
+        assert resp.status_code == 404

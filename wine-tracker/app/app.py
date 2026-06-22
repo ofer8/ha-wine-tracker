@@ -923,6 +923,48 @@ def buy_list_delete(item_id):
     return ingress_redirect("buy_list_page")
 
 
+def _copy_image_file(image):
+    """Copy an UPLOAD_DIR image to a fresh filename. Returns new name or None."""
+    if not image:
+        return None
+    src = os.path.join(UPLOAD_DIR, image)
+    if not os.path.exists(src):
+        return None
+    ext = image.rsplit(".", 1)[-1].lower()
+    new_name = f"{uuid.uuid4().hex}.{ext}"
+    shutil.copy2(src, os.path.join(UPLOAD_DIR, new_name))
+    return new_name
+
+
+@app.route("/buy-list/rebuy/<int:wine_id>", methods=["POST"])
+def buy_list_rebuy(wine_id):
+    db = get_db()
+    wine = db.execute("SELECT * FROM wines WHERE id=?", (wine_id,)).fetchone()
+    if not wine:
+        return jsonify({"ok": False, "error": "not_found"}), 404
+    vals = {
+        "name": wine["name"],
+        "year": wine["year"],
+        "type": wine["type"],
+        "region": wine["region"],
+        "grape": wine["grape"],
+        "price": wine["price"],
+        "notes": wine["notes"],
+        "image": _copy_image_file(wine["image"]),
+        "bottle_format": wine["bottle_format"] if wine["bottle_format"] is not None else 0.75,
+        "desired_qty": 1,
+        "drink_from": wine["drink_from"],
+        "drink_until": wine["drink_until"],
+        "maturity_data": wine["maturity_data"],
+        "taste_profile": wine["taste_profile"],
+        "food_pairings": wine["food_pairings"],
+    }
+    new_id = _insert_buy_list(db, vals)
+    if is_ajax():
+        return jsonify({"ok": True, "id": new_id})
+    return ingress_redirect("buy_list_page")
+
+
 def _normalize_duplicate_name(value):
     """Normalize AI/user label text enough for duplicate-name comparison."""
     folded = unicodedata.normalize("NFKD", value or "")
