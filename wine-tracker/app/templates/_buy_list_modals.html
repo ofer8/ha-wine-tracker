@@ -1,5 +1,5 @@
-<div id="wishlistModal" class="modal" style="display:none">
-  <div class="modal-box">
+<div id="wishlistModal" class="modal-overlay">
+  <div class="modal bl-modal">
     <h3 id="wishlistModalTitle">{{ t.btn_add_to_wishlist }}</h3>
 
     {% if ai_enabled %}
@@ -59,7 +59,7 @@ function openWishlistAdd() {
   _wishlistEditId = null;
   _blResetForm();
   document.getElementById('wishlistModalTitle').textContent = "{{ t.btn_add_to_wishlist }}";
-  document.getElementById('wishlistModal').style.display = 'flex';
+  document.getElementById('wishlistModal').classList.add('open');
 }
 function openWishlistEdit(item) {
   _wishlistEditId = item.id;
@@ -78,9 +78,9 @@ function openWishlistEdit(item) {
   document.getElementById('blMaturity').value = item.maturity_data || '';
   document.getElementById('blTaste').value = item.taste_profile || '';
   document.getElementById('blPairings').value = item.food_pairings || '';
-  document.getElementById('wishlistModal').style.display = 'flex';
+  document.getElementById('wishlistModal').classList.add('open');
 }
-function closeWishlistModal() { document.getElementById('wishlistModal').style.display = 'none'; }
+function closeWishlistModal() { document.getElementById('wishlistModal').classList.remove('open'); }
 
 function blScanLabel(file) {
   if (!file) return;
@@ -134,8 +134,8 @@ function removeWishlistItem(id) {
 }
 </script>
 
-<div id="moveModal" class="modal" style="display:none">
-  <div class="modal-box">
+<div id="moveModal" class="modal-overlay">
+  <div class="modal bl-modal">
     <h3>{{ t.move_dialog_title }}</h3>
     <form id="moveForm" onsubmit="return submitMove(event)">
       <input type="hidden" name="original_year" id="moveOriginalYear" value="">
@@ -185,9 +185,9 @@ function openMoveToCellar(item) {
   document.getElementById('moveMaturity').value = item.maturity_data || '';
   document.getElementById('moveTaste').value = item.taste_profile || '';
   document.getElementById('movePairings').value = item.food_pairings || '';
-  document.getElementById('moveModal').style.display = 'flex';
+  document.getElementById('moveModal').classList.add('open');
 }
-function closeMoveModal() { document.getElementById('moveModal').style.display = 'none'; }
+function closeMoveModal() { document.getElementById('moveModal').classList.remove('open'); }
 function submitMove(e) {
   e.preventDefault();
   const fd = new FormData(document.getElementById('moveForm'));

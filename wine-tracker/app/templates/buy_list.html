@@ -40,7 +40,7 @@
     {% if items %}
     <div class="bl-grid">
       {% for it in items %}
-      <div class="card bl-card" data-id="{{ it.id }}">
+      <div class="bl-card" data-id="{{ it.id }}">
         {% if it.image %}<img src="{{ ingress }}/uploads/{{ it.image }}" alt="" class="bl-thumb">{% endif %}
         <div class="bl-card-body">
           <div class="bl-name">{{ it.name }}{% if it.year %} ({{ it.year }}){% endif %}</div>
@@ -64,7 +64,7 @@
     {% if out_of_stock %}
     <div class="bl-grid">
       {% for w in out_of_stock %}
-      <div class="card bl-card" data-wine-id="{{ w.id }}">
+      <div class="bl-card" data-wine-id="{{ w.id }}">
         {% if w.image %}<img src="{{ ingress }}/uploads/{{ w.image }}" alt="" class="bl-thumb">{% endif %}
         <div class="bl-card-body">
           <div class="bl-name">{{ w.name }}{% if w.year %} ({{ w.year }}){% endif %}</div>
