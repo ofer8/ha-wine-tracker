@@ -191,6 +191,7 @@ TRANSLATIONS = {
     "empty_out_of_stock": "Nichts ist ausverkauft.",
     "move_dialog_title": "Zum Keller hinzufügen",
     "scan_label": "Etikett scannen",
+    "error_generic": "Etwas ist schiefgelaufen. Bitte versuche es erneut.",
 
     # Card
     "bottle_abbr": "Flasche",
@@ -562,6 +563,7 @@ TRANSLATIONS = {
     "empty_out_of_stock": "Nothing is out of stock.",
     "move_dialog_title": "Add to Cellar",
     "scan_label": "Scan label",
+    "error_generic": "Something went wrong. Please try again.",
 
     "bottle_abbr": "Bottle",
     "bottles_abbr": "Bottles",
@@ -926,6 +928,7 @@ TRANSLATIONS = {
     "empty_out_of_stock": "Rien n'est épuisé.",
     "move_dialog_title": "Ajouter à la cave",
     "scan_label": "Scanner l'étiquette",
+    "error_generic": "Une erreur est survenue. Veuillez réessayer.",
 
     "bottle_abbr": "Bouteille",
     "bottles_abbr": "Bouteilles",
@@ -1290,6 +1293,7 @@ TRANSLATIONS = {
     "empty_out_of_stock": "Niente è esaurito.",
     "move_dialog_title": "Aggiungi alla cantina",
     "scan_label": "Scansiona etichetta",
+    "error_generic": "Qualcosa è andato storto. Riprova.",
 
     "bottle_abbr": "Bottiglia",
     "bottles_abbr": "Bottiglie",
@@ -1646,14 +1650,15 @@ TRANSLATIONS = {
     "buy_list_title": "Lista de compra",
     "tab_wishlist": "Lista de deseos",
     "tab_out_of_stock": "Agotado",
-    "btn_add_to_wishlist": "Anadir a la lista",
+    "btn_add_to_wishlist": "Añadir a la lista",
     "label_desired_qty": "Cantidad deseada",
     "btn_move_to_cellar": "Mover a la bodega",
     "btn_rebuy": "Volver a comprar",
-    "empty_wishlist": "Tu lista de deseos esta vacia.",
+    "empty_wishlist": "Tu lista de deseos está vacía.",
     "empty_out_of_stock": "No hay nada agotado.",
-    "move_dialog_title": "Anadir a la bodega",
+    "move_dialog_title": "Añadir a la bodega",
     "scan_label": "Escanear etiqueta",
+    "error_generic": "Algo salió mal. Inténtalo de nuevo.",
 
     "bottle_abbr": "Botella",
     "bottles_abbr": "Botellas",
@@ -2018,6 +2023,7 @@ TRANSLATIONS = {
     "empty_out_of_stock": "Nada esgotado.",
     "move_dialog_title": "Adicionar à adega",
     "scan_label": "Digitalizar rótulo",
+    "error_generic": "Algo correu mal. Tente novamente.",
 
     "bottle_abbr": "Garrafa",
     "bottles_abbr": "Garrafas",
@@ -2382,6 +2388,7 @@ TRANSLATIONS = {
     "empty_out_of_stock": "Niets is uitverkocht.",
     "move_dialog_title": "Aan kelder toevoegen",
     "scan_label": "Etiket scannen",
+    "error_generic": "Er ging iets mis. Probeer het opnieuw.",
 
     "bottle_abbr": "Fles",
     "bottles_abbr": "Flessen",

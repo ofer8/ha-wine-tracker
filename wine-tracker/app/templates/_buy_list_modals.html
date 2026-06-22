@@ -112,6 +112,8 @@ function blScanLabel(file) {
     .catch(function(){ _setLoading('none'); });
 }
 
+function _blFail(btn){ if (btn) btn.disabled = false; alert("{{ t.error_generic }}"); }
+
 function submitWishlist(e) {
   e.preventDefault();
   const form = document.getElementById('wishlistForm');
@@ -119,14 +121,16 @@ function submitWishlist(e) {
   const url = _wishlistEditId ? (INGRESS + '/buy-list/edit/' + _wishlistEditId) : (INGRESS + '/buy-list/add');
   fetch(url, { method: 'POST', body: fd, headers: { 'X-Requested-With': 'XMLHttpRequest' } })
     .then(function(r){ return r.json(); })
-    .then(function(data){ if (data.ok) location.reload(); });
+    .then(function(data){ if (data.ok) location.reload(); else _blFail(null); })
+    .catch(function(){ _blFail(null); });
   return false;
 }
 
 function removeWishlistItem(id) {
   fetch(INGRESS + '/buy-list/delete/' + id, { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' } })
     .then(function(r){ return r.json(); })
-    .then(function(data){ if (data.ok) location.reload(); });
+    .then(function(data){ if (data.ok) location.reload(); else _blFail(null); })
+    .catch(function(){ _blFail(null); });
 }
 </script>
 
@@ -189,13 +193,15 @@ function submitMove(e) {
   const fd = new FormData(document.getElementById('moveForm'));
   fetch(INGRESS + '/buy-list/move/' + _moveItemId, { method: 'POST', body: fd, headers: { 'X-Requested-With': 'XMLHttpRequest' } })
     .then(function(r){ return r.json(); })
-    .then(function(data){ if (data.ok) location.reload(); });
+    .then(function(data){ if (data.ok) location.reload(); else _blFail(null); })
+    .catch(function(){ _blFail(null); });
   return false;
 }
 function rebuyWine(wineId, btn) {
   if (btn) btn.disabled = true;
   fetch(INGRESS + '/buy-list/rebuy/' + wineId, { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' } })
     .then(function(r){ return r.json(); })
-    .then(function(data){ if (data.ok) location.reload(); });
+    .then(function(data){ if (data.ok) location.reload(); else _blFail(btn); })
+    .catch(function(){ _blFail(btn); });
 }
 </script>

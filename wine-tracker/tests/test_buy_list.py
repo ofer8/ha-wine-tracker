@@ -2,7 +2,6 @@
 import io
 import json
 import os
-import sqlite3
 import sys
 from unittest.mock import patch
 
@@ -37,7 +36,7 @@ class TestTranslations:
             "nav_buy_list", "buy_list_title", "tab_wishlist", "tab_out_of_stock",
             "btn_add_to_wishlist", "label_desired_qty", "btn_move_to_cellar",
             "btn_rebuy", "empty_wishlist", "empty_out_of_stock",
-            "move_dialog_title", "scan_label",
+            "move_dialog_title", "scan_label", "error_generic",
         ]
         for lang in ("de", "en", "fr", "it", "es", "pt", "nl"):
             for key in keys:
