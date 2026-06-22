@@ -315,3 +315,9 @@ class TestMoveDialogUI:
         assert b'id="moveOriginalYear"' in resp.data
         assert b'openMoveToCellar' in resp.data
         assert b'rebuyWine' in resp.data
+
+
+class TestCellarOutOfStockFilter:
+    def test_filter_option_present(self, client):
+        resp = client.get("/")
+        assert b'filterOutOfStock' in resp.data

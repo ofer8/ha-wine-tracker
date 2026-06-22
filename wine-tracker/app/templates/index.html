@@ -58,6 +58,10 @@
         </label>
         {% endfor %}
       </div>
+      <hr class="filter-divider">
+      <label class="filter-option" data-special="oos">
+        <input type="radio" name="wineSpecial" value="oos" onchange="filterOutOfStock()"> {{ t.tab_out_of_stock }}
+      </label>
       <div id="filterDrinkWindowSection" style="display:none">
         <hr class="filter-divider">
         <div class="filter-section-title">{{ t.filter_title_dw }}</div>
@@ -621,6 +625,12 @@ function filterByDrinkWindow(val) {
     opt.classList.toggle('active', (opt.dataset.dw || '') === val);
   });
   applyFilters();
+}
+
+function filterOutOfStock() {
+  document.querySelectorAll('.card[data-id]').forEach(function(card){
+    card.style.display = (card.dataset.quantity === '0') ? '' : 'none';
+  });
 }
 
 function toggleEmpty() {
