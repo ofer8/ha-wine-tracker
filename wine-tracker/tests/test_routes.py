@@ -1183,3 +1183,105 @@ class TestDevAuth:
         resp = client.get("/", follow_redirects=False)
         assert resp.status_code == 302
         assert "/login" in resp.headers["Location"]
+
+
+# ── Duplicate detection on /add ───────────────────────────────────────────────
+
+def _add_wine(client, **overrides):
+    data = {
+        "name": "Château Test", "year": "2018", "type": "Rotwein",
+        "region": "Bordeaux, FR", "quantity": "1", "rating": "0",
+        "bottle_format": "0.75",
+    }
+    data.update(overrides)
+    return client.post("/add", data=data,
+                       headers={"X-Requested-With": "XMLHttpRequest"})
+
+
+def test_add_no_existing_inserts_normally(client, db):
+    resp = _add_wine(client, quantity="2")
+    body = json.loads(resp.data)
+    assert body["ok"] is True
+    rows = db.execute("SELECT COUNT(*) AS c FROM wines").fetchone()
+    assert rows["c"] == 1
+
+
+def test_add_matching_wine_returns_duplicate_without_inserting(client, db):
+    _add_wine(client, quantity="3")
+    resp = _add_wine(client, quantity="1")
+    body = json.loads(resp.data)
+    assert body["ok"] is False
+    assert body["duplicate"]["name"] == "Château Test"
+    assert body["duplicate"]["year"] == 2018
+    assert body["duplicate"]["quantity"] == 3
+    # Still only ONE row — phase one must not insert
+    assert db.execute("SELECT COUNT(*) AS c FROM wines").fetchone()["c"] == 1
+
+
+def test_add_merge_bumps_quantity_and_logs_restock(client, db):
+    first = json.loads(_add_wine(client, quantity="3").data)
+    target_id = first["wine"]["id"]
+    resp = _add_wine(client, quantity="2", dup_action="merge",
+                     dup_target_id=str(target_id))
+    body = json.loads(resp.data)
+    assert body["ok"] is True
+    assert db.execute("SELECT COUNT(*) AS c FROM wines").fetchone()["c"] == 1
+    qty = db.execute("SELECT quantity FROM wines WHERE id=?", (target_id,)).fetchone()["quantity"]
+    assert qty == 5
+    restock = db.execute(
+        "SELECT quantity FROM timeline WHERE wine_id=? AND action='restocked'",
+        (target_id,)).fetchone()
+    assert restock["quantity"] == 2
+
+
+def test_add_separate_inserts_second_row(client, db):
+    _add_wine(client, quantity="1")
+    resp = _add_wine(client, quantity="1", dup_action="separate")
+    assert json.loads(resp.data)["ok"] is True
+    assert db.execute("SELECT COUNT(*) AS c FROM wines").fetchone()["c"] == 2
+
+
+def test_add_match_is_case_and_whitespace_insensitive(client, db):
+    _add_wine(client, name="Château Test", quantity="1")
+    resp = _add_wine(client, name="  château test ", quantity="1")
+    assert json.loads(resp.data)["ok"] is False
+
+
+def test_add_different_year_is_not_a_match(client, db):
+    _add_wine(client, year="2018", quantity="1")
+    resp = _add_wine(client, year="2019", quantity="1")
+    assert json.loads(resp.data)["ok"] is True
+    assert db.execute("SELECT COUNT(*) AS c FROM wines").fetchone()["c"] == 2
+
+
+def test_add_different_bottle_format_is_not_a_match(client, db):
+    _add_wine(client, bottle_format="0.75", quantity="1")
+    resp = _add_wine(client, bottle_format="1.5", quantity="1")
+    assert json.loads(resp.data)["ok"] is True
+    assert db.execute("SELECT COUNT(*) AS c FROM wines").fetchone()["c"] == 2
+
+
+def test_add_null_vintage_wines_match(client, db):
+    _add_wine(client, year="", quantity="1")
+    resp = _add_wine(client, year="", quantity="1")
+    assert json.loads(resp.data)["ok"] is False
+    assert db.execute("SELECT COUNT(*) AS c FROM wines").fetchone()["c"] == 1
+
+
+def test_add_merge_restocks_empty_bottle(client, db):
+    first = json.loads(_add_wine(client, quantity="1").data)
+    target_id = first["wine"]["id"]
+    db.execute("UPDATE wines SET quantity=0 WHERE id=?", (target_id,))
+    db.commit()
+    _add_wine(client, quantity="2", dup_action="merge", dup_target_id=str(target_id))
+    qty = db.execute("SELECT quantity FROM wines WHERE id=?", (target_id,)).fetchone()["quantity"]
+    assert qty == 2
+
+
+def test_translations_have_dup_detect_keys():
+    import translations
+    keys = ["dup_detect_title", "dup_detect_body", "dup_detect_merge",
+            "dup_detect_separate", "dup_detect_cancel"]
+    for lang, d in translations.TRANSLATIONS.items():
+        for k in keys:
+            assert k in d, f"{lang} missing {k}"

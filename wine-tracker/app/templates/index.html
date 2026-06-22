@@ -226,6 +226,24 @@
   </div>
 </div>
 
+<!-- ═══════════════ DUPLICATE-DETECT MODAL ═══════════════ -->
+<div class="modal-overlay" id="dupDetectModal">
+  <div class="modal" style="max-width:380px">
+    <div class="modal-header">
+      {{ t.dup_detect_title }}
+      <button class="modal-close" onclick="closeModal('dupDetectModal')">×</button>
+    </div>
+    <div class="delete-confirm-body">
+      <div class="delete-confirm-icon"><i class="mdi mdi-bottle-wine"></i></div>
+      <div class="delete-confirm-msg" id="dupDetectBody"></div>
+    </div>
+    <div class="delete-confirm-actions" style="flex-direction:column; gap:8px">
+      <button class="btn-submit" id="dupMergeBtn" onclick="dupMerge()" style="width:100%"></button>
+      <button class="btn-cancel" onclick="dupSeparate()" style="width:100%">{{ t.dup_detect_separate }}</button>
+      <button class="btn-cancel" onclick="closeModal('dupDetectModal')" style="width:100%">{{ t.dup_detect_cancel }}</button>
+    </div>
+  </div>
+</div>
 
 <!-- ═══════════════ WINE VIEW MODAL ═══════════════ -->
 {% include '_wine_view_modal.html' %}
