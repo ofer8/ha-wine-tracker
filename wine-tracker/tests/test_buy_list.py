@@ -70,4 +70,4 @@ class TestBuyListPage:
 
     def test_nav_link_present_on_cellar(self, client):
         resp = client.get("/")
-        assert b'href="' in resp.data and b'/buy-list' in resp.data
+        assert b'href="/buy-list"' in resp.data
