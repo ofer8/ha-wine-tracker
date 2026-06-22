@@ -80,7 +80,7 @@ A wine cellar tracker for Home Assistant or Docker - manage your entire collecti
 - **Fully responsive** - works great on desktop & mobile
 - **Multi-language** - 7 languages (DE, EN, FR, IT, ES, PT, NL)
 - **HA Ingress** - embedded directly in the Home Assistant sidebar
-- **REST API** at `/api/summary` for HA sensors
+- **REST API** - read-only JSON endpoints (stats, drink window, collection, single wine) for dashboards, sensors & automations
 - **DEV_AUTH mode** - `DEV_AUTH` env var for quick local development without Home Assistant
 - **Backup & restore** - export the whole cellar as a ZIP (JSON + CSV + images) and import it back with duplicate preview
 
@@ -275,18 +275,117 @@ Token cost varies by provider and model - typical analysis is ~2,500 tokens. See
 
 All data (SQLite database + photos) is stored under `/share/wine-tracker/` - preserved across add-on updates, restarts, and HA updates.
 
+## REST API
+
+Wine Tracker exposes read-only JSON endpoints for dashboards, automations, and integrations. They are served on the same host and port as the web UI - `http://<host>:5050` for standalone Docker, or proxied through HA ingress.
+
+**Conventions**
+
+- All endpoints are `GET` and return JSON.
+- The endpoints below use an `{"ok": true, ...}` envelope; errors return `{"ok": false, "error": "..."}` with a matching HTTP status. The legacy `/api/summary` returns its payload directly, without the envelope.
+- Wine `type` is always the **English** canonical label (e.g. `Red Wine`), regardless of the configured UI language, so values stay stable for automations.
+- Auth follows the app: open in the Home Assistant add-on (access gated by HA); in standalone Docker with `AUTH_ENABLED=true`, a request without a valid session receives `401`.
+
+| Endpoint | Purpose |
+|----------|---------|
+| [`GET /api/stats`](#get-apistats) | cellar-wide aggregates |
+| [`GET /api/drink-window`](#get-apidrink-window) | wines bucketed by drinking window |
+| [`GET /api/wines`](#get-apiwines) | filterable / sortable / paginated collection |
+| [`GET /api/wines/<id>`](#get-apiwinesid) | single wine, full detail |
+| [`GET /api/summary`](#get-apisummary-legacy) | bottle count + by-type breakdown (legacy) |
+
+### `GET /api/stats`
+
+Cellar-wide aggregates. Scalar fields are top-level so HA `json_attributes` can read them directly; the `by_*` fields are JSON lists.
+
+| Field | Description |
+|-------|-------------|
+| `total_bottles` | sum of all bottle quantities |
+| `distinct_wines` | number of wine entries (incl. empty placeholders) |
+| `out_of_stock` | entries with quantity 0 |
+| `total_liters` | sum of `quantity x bottle_format` |
+| `total_value` | sum of `quantity x price` |
+| `avg_price` / `avg_age` / `avg_rating` | averages over priced / vintaged / rated wines |
+| `by_type` | `[{ "type", "bottles", "wines" }]` |
+| `by_region` / `by_grape` | `[{ "region"/"grape", "bottles" }]` |
+| `by_decade` | `[{ "decade", "bottles" }]` |
+| `currency` | configured currency code |
+
+```json
+{
+  "ok": true, "currency": "CHF",
+  "total_bottles": 42, "distinct_wines": 18, "out_of_stock": 2,
+  "total_liters": 31.5, "total_value": 1234.5,
+  "avg_price": 29.4, "avg_age": 6.2, "avg_rating": 3.8,
+  "by_type":   [{ "type": "Red Wine", "bottles": 20, "wines": 8 }],
+  "by_region": [{ "region": "Bordeaux", "bottles": 12 }],
+  "by_grape":  [{ "grape": "Merlot", "bottles": 9 }],
+  "by_decade": [{ "decade": 2010, "bottles": 15 }]
+}
+```
+
+### `GET /api/drink-window`
+
+In-stock wines bucketed by drinking window for the current year (`drink_from` / `drink_until` are vintage years).
+
+| Field | Description |
+|-------|-------------|
+| `current_year` | year used for bucketing |
+| `ready_now` | count of wines ready to drink |
+| `entering_this_year` / `leaving_this_year` | wines whose window opens / closes this year |
+| `counts` | `{ "ready", "too_young", "past_peak", "unknown" }` |
+| `ready` / `too_young` / `past_peak` / `unknown` | lists of `{ id, name, year, type, quantity, drink_from, drink_until, location }` |
+
+Buckets (in-stock only): `ready` = `from <= year <= until`, `too_young` = `year < from`, `past_peak` = `year > until`, `unknown` = no window set. One-sided windows (only `from`, or only `until`) are handled.
+
+### `GET /api/wines`
+
+The collection as a filterable, sortable, paginated list of **light** records - every wine field except the large `maturity_data` / `taste_profile` / `food_pairings` blobs (use the detail endpoint for those).
+
+| Query param | Effect |
+|-------------|--------|
+| `type` | English label, e.g. `type=Red Wine` |
+| `region` / `grape` | case-insensitive substring match |
+| `year` | exact vintage |
+| `in_stock` | `true` / `1` / `yes` -> quantity > 0 |
+| `min_rating` | minimum star rating |
+| `sort` | `name` (default), `year`, `rating`, `price`, `added`, `quantity` |
+| `order` | `asc` (default) or `desc` |
+| `limit` / `offset` | pagination (`limit` 1-500) |
+
+Unknown or invalid parameters are ignored - a bad filter never returns `400`.
+
+```
+GET /api/wines?type=Red%20Wine&in_stock=true&sort=year&order=desc&limit=50
+```
+```json
+{ "ok": true, "count": 18, "returned": 18,
+  "wines": [ { "id": 1, "name": "Chateau ...", "year": 2018, "type": "Red Wine",
+               "quantity": 2, "rating": 4, "price": 29.9, "location": "Keller A",
+               "image_path": "/uploads/abc.jpg" } ] }
+```
+
+`count` is the total matching the filters before pagination; `returned` is the page size.
+
+### `GET /api/wines/<id>`
+
+A single wine with full detail, including the parsed `maturity_data`, `taste_profile`, and `food_pairings` objects. Unknown id returns `404`:
+
+```json
+{ "ok": false, "error": "not_found" }
+```
+
+### `GET /api/summary` (legacy)
+
+Unchanged - kept for existing HA sensors. Returns the total bottle count and a by-type breakdown (English labels), without the `ok` envelope.
+
+```json
+{ "total_bottles": 42, "by_type": [{ "type": "Red Wine", "cnt": 8, "total": 20 }] }
+```
+
 ## Home Assistant Sensor (Optional)
 
-The add-on exposes read-only JSON endpoints for dashboards and automations. All return
-`{"ok": true, ...}` and use **English** wine-type labels regardless of the UI language.
-
-| Endpoint | Returns |
-|----------|---------|
-| `/api/summary` | total bottle count + by-type breakdown (legacy, unchanged) |
-| `/api/stats` | totals, liters, value, average age/rating, breakdowns by type/region/grape/decade |
-| `/api/drink-window` | wines bucketed `ready` / `too_young` / `past_peak` / `unknown`, plus year-boundary counts |
-| `/api/wines` | the collection as JSON, filterable & sortable (`?type=`, `?region=`, `?in_stock=true`, `?sort=year&order=desc`, `?limit=`) |
-| `/api/wines/<id>` | one wine, full detail incl. maturity / taste / pairings |
+See the [REST API](#rest-api) reference above for all endpoints, parameters, and response fields. Below are ready-to-use Home Assistant sensor and automation examples.
 
 ### Stock & value sensor
 
