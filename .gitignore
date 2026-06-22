@@ -6,4 +6,3 @@ wine-tracker/app/data/
 wine-tracker/tests/__pycache__/
 .DS_Store
 .claude/
-CLAUDE.md
