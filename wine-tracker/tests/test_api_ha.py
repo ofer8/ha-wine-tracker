@@ -186,6 +186,17 @@ def test_drink_window_entering_and_leaving(db):
     assert dw["leaving_this_year"] == 1
 
 
+def test_drink_window_same_year_entering_and_leaving(db):
+    # A one-year window (drink_from == drink_until == current year) is both
+    # entering and leaving this year, and is ready now.
+    _insert(db, name="OneYear", quantity=1, drink_from=2026, drink_until=2026)
+    dw = api_queries.compute_drink_window(db, 2026)
+    assert dw["entering_this_year"] == 1
+    assert dw["leaving_this_year"] == 1
+    assert dw["counts"]["ready"] == 1
+    assert dw["ready"][0]["name"] == "OneYear"
+
+
 def test_drink_window_excludes_out_of_stock(db):
     _insert(db, name="Empty", quantity=0, drink_from=2022, drink_until=2028)
     dw = api_queries.compute_drink_window(db, 2026)
@@ -199,3 +210,6 @@ def test_drink_window_route(client, db):
     assert data["ok"] is True
     assert "current_year" in data
     assert set(data["counts"]) == {"ready", "too_young", "past_peak", "unknown"}
+    assert "ready_now" in data
+    assert "entering_this_year" in data
+    assert "leaving_this_year" in data
