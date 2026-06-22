@@ -3162,6 +3162,12 @@ def api_drink_window():
     return jsonify(ok=True, **api_queries.compute_drink_window(db, datetime.now().year))
 
 
+@app.route("/api/wines")
+def api_wines_list():
+    db = get_db()
+    return jsonify(ok=True, **api_queries.query_wines(db, request.args))
+
+
 # ── Main ──────────────────────────────────────────────────────────────────────
 
 if __name__ == "__main__":

@@ -213,3 +213,81 @@ def test_drink_window_route(client, db):
     assert "ready_now" in data
     assert "entering_this_year" in data
     assert "leaving_this_year" in data
+
+
+# ── query_wines / /api/wines ────────────────────────────────────────────────────
+def test_wines_list_light_projection(client, db):
+    _insert(db, name="A", type="Rotwein", image="a.jpg", maturity_data='{"k":1}',
+            taste_profile='{"b":2}', food_pairings='["x"]')
+    resp = client.get("/api/wines")
+    data = json.loads(resp.data)
+    assert data["ok"] is True
+    assert data["count"] == 1
+    assert data["returned"] == 1
+    w = data["wines"][0]
+    assert w["type"] == "Red Wine"
+    assert w["image_path"] == "/uploads/a.jpg"
+    assert "maturity_data" not in w
+    assert "taste_profile" not in w
+    assert "food_pairings" not in w
+
+
+def test_wines_filter_type_english(client, db):
+    _insert(db, name="Red", type="Rotwein")
+    _insert(db, name="White", type="Weisswein")
+    resp = client.get("/api/wines?type=Red Wine")
+    data = json.loads(resp.data)
+    assert data["count"] == 1
+    assert data["wines"][0]["name"] == "Red"
+
+
+def test_wines_filter_region_substring(client, db):
+    _insert(db, name="A", region="Bordeaux, FR")
+    _insert(db, name="B", region="Tuscany, IT")
+    resp = client.get("/api/wines?region=Bordeaux")
+    data = json.loads(resp.data)
+    assert data["count"] == 1
+    assert data["wines"][0]["name"] == "A"
+
+
+def test_wines_filter_grape_year_rating(client, db):
+    _insert(db, name="A", grape="Merlot", year=2018, rating=5)
+    _insert(db, name="B", grape="Syrah", year=2020, rating=2)
+    assert json.loads(client.get("/api/wines?grape=Merlot").data)["count"] == 1
+    assert json.loads(client.get("/api/wines?year=2020").data)["count"] == 1
+    assert json.loads(client.get("/api/wines?min_rating=3").data)["count"] == 1
+
+
+def test_wines_filter_in_stock(client, db):
+    _insert(db, name="Full", quantity=2)
+    _insert(db, name="Empty", quantity=0)
+    resp = client.get("/api/wines?in_stock=true")
+    data = json.loads(resp.data)
+    assert data["count"] == 1
+    assert data["wines"][0]["name"] == "Full"
+
+
+def test_wines_sort_year_desc(client, db):
+    _insert(db, name="Old", year=2018)
+    _insert(db, name="New", year=2020)
+    resp = client.get("/api/wines?sort=year&order=desc")
+    data = json.loads(resp.data)
+    assert [w["year"] for w in data["wines"]] == [2020, 2018]
+
+
+def test_wines_invalid_sort_falls_back(client, db):
+    _insert(db, name="A")
+    resp = client.get("/api/wines?sort=banana&order=sideways")
+    data = json.loads(resp.data)
+    assert resp.status_code == 200
+    assert data["ok"] is True
+
+
+def test_wines_pagination(client, db):
+    for i in range(3):
+        _insert(db, name=f"W{i}")
+    resp = client.get("/api/wines?limit=2")
+    data = json.loads(resp.data)
+    assert data["count"] == 3
+    assert data["returned"] == 2
+    assert len(data["wines"]) == 2

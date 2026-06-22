@@ -139,6 +139,77 @@ def compute_stats(db, current_year):
     }
 
 
+_SORT_COLUMNS = {
+    "name": "name", "year": "year", "rating": "rating",
+    "price": "price", "added": "added", "quantity": "quantity",
+}
+
+
+def _int_or_none(value):
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return None
+
+
+def query_wines(db, params):
+    """Filter / sort / paginate the collection.
+
+    `params` is any mapping with .get() (Flask request.args or a plain dict).
+    Unknown or uninterpretable params are ignored (lenient — never raises).
+    Returns {count, returned, wines} where `wines` are light records.
+    """
+    where, args = [], []
+
+    type_val = params.get("type")
+    if type_val:
+        where.append("type = ?")
+        args.append(resolve_type_filter(type_val))
+
+    region = params.get("region")
+    if region:
+        where.append("region LIKE ?")
+        args.append(f"%{region}%")
+
+    grape = params.get("grape")
+    if grape:
+        where.append("grape LIKE ?")
+        args.append(f"%{grape}%")
+
+    year = _int_or_none(params.get("year"))
+    if year is not None:
+        where.append("year = ?")
+        args.append(year)
+
+    if str(params.get("in_stock", "")).lower() in ("1", "true", "yes"):
+        where.append("quantity > 0")
+
+    min_rating = _int_or_none(params.get("min_rating"))
+    if min_rating is not None:
+        where.append("rating >= ?")
+        args.append(min_rating)
+
+    where_sql = (" WHERE " + " AND ".join(where)) if where else ""
+    total = db.execute(f"SELECT COUNT(*) FROM wines{where_sql}", args).fetchone()[0]
+
+    sort_col = _SORT_COLUMNS.get((params.get("sort") or "").lower(), "name")
+    order = "DESC" if (params.get("order") or "").lower() == "desc" else "ASC"
+    order_sql = f" ORDER BY {sort_col} {order}, name COLLATE NOCASE ASC"
+
+    limit = _int_or_none(params.get("limit"))
+    offset = _int_or_none(params.get("offset")) or 0
+    limit_sql, page_args = "", list(args)
+    if limit is not None and 1 <= limit <= 500:
+        limit_sql = " LIMIT ? OFFSET ?"
+        page_args.extend([limit, max(offset, 0)])
+
+    rows = db.execute(
+        f"SELECT * FROM wines{where_sql}{order_sql}{limit_sql}", page_args
+    ).fetchall()
+    wines = [serialize_wine(r, full=False) for r in rows]
+    return {"count": total, "returned": len(wines), "wines": wines}
+
+
 _FAR_YEAR = 9999  # sort sentinel so None drink years sort last without comparing None
 
 
