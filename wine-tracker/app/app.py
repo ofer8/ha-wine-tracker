@@ -143,7 +143,7 @@ def _ssl_verify():
         return True
 
 
-APP_VERSION = "1.10.0"
+APP_VERSION = "1.11.0"
 
 HA_OPTIONS = load_options()
 

@@ -356,11 +356,12 @@ See `CLAUDE.md` for full project guidelines (in German).
 
 ## Version History
 
-Current version: **v1.10.0**
+Current version: **v1.11.0**
 
 See `CHANGELOG.md` for the complete version history.
 
 Recent highlights:
+- **v1.11.0** - Duplicate detection on the add flow (merge or keep separate, all 7 languages); restock no longer creates duplicate rows; /api/summary wine types mapped to English for Home Assistant sensors; advanced-filter autocomplete and badge fixes; mobile filter polish; HA dev-addon update script and local Docker Compose setup.
 - **v1.10.0** - Advanced filter with multi-AND conditions and saveable filter presets (resolves #5); Mistral added as a sixth AI provider; mobile chat keyboard fix v2 (CSS --kb-inset, interactive-widget); uniform 38px action buttons; ROADMAP extracted from README.
 - **v1.9.2** - Vivino search rewritten to use the internal JSON API (was broken by Vivino's switch to client-side rendering); smarter term-reduction fallback for regional wines; fixed stats crash with no region data; wider search modal.
 - **v1.9.1** - Fixed mobile keyboard covering chat input on iOS (Visual Viewport API). Chat history sidebar now closes on mobile when starting a new session.
