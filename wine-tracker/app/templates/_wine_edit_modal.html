@@ -150,6 +150,25 @@
   </div>
 </div>
 
+<!-- ═══════════════ DUPLICATE-DETECT MODAL ═══════════════ -->
+<div class="modal-overlay duplicate-detect-overlay" id="dupDetectModal">
+  <div class="modal duplicate-detect-modal">
+    <div class="modal-header">
+      {{ t.dup_detect_title }}
+      <button class="modal-close" onclick="cancelDupDetectDialog()">×</button>
+    </div>
+    <div class="delete-confirm-body">
+      <div class="delete-confirm-icon"><i class="mdi mdi-bottle-wine"></i></div>
+      <div class="delete-confirm-msg" id="dupDetectBody"></div>
+    </div>
+    <div class="delete-confirm-actions duplicate-detect-actions">
+      <button class="btn-submit" id="dupMergeBtn" onclick="dupMerge()"></button>
+      <button class="btn-cancel" onclick="dupSeparate()">{{ t.dup_detect_separate }}</button>
+      <button class="btn-cancel" onclick="cancelDupDetectDialog()">{{ t.dup_detect_cancel }}</button>
+    </div>
+  </div>
+</div>
+
 <script src="{{ ingress }}/static/wine-modal.js"></script>
 <script>
 // ── Wine Edit Modal JS ──────────────────────────────────────────────────────
@@ -860,6 +879,7 @@ function submitWineForm(form, dupAction, targetId) {
       return;
     }
     if (!data.ok) return;
+    resetDupDetectDialog();
     closeModal('dupDetectModal');
     closeModal('wineModal');
     if (typeof window._onWineSaved === 'function') {
@@ -873,6 +893,9 @@ function submitWineForm(form, dupAction, targetId) {
 function showDupDetectDialog(form, dup) {
   _dupPendingForm = form;
   _dupPending = dup;
+  var bodyEl = document.getElementById('dupDetectBody');
+  var mergeBtn = document.getElementById('dupMergeBtn');
+  if (!bodyEl || !mergeBtn) return;
   var addedQty = parseInt(new FormData(form).get('quantity') || '1', 10) || 1;
   var fmt = String(dup.bottle_format != null ? dup.bottle_format : '');
   var body = (window.T.dup_detect_body || '')
@@ -881,10 +904,19 @@ function showDupDetectDialog(form, dup) {
     .replace('{year}', dup.year || '')
     .replace('{format}', fmt)
     .replace('{location}', dup.location || '-');
-  document.getElementById('dupDetectBody').textContent = body;
-  document.getElementById('dupMergeBtn').textContent =
-    (window.T.dup_detect_merge || '').replace('{n}', dup.quantity + addedQty);
+  bodyEl.textContent = body;
+  mergeBtn.textContent = (window.T.dup_detect_merge || '').replace('{n}', dup.quantity + addedQty);
   openModal('dupDetectModal');
+}
+
+function resetDupDetectDialog() {
+  _dupPendingForm = null;
+  _dupPending = null;
+}
+
+function cancelDupDetectDialog() {
+  resetDupDetectDialog();
+  closeModal('dupDetectModal');
 }
 
 function dupMerge() {
