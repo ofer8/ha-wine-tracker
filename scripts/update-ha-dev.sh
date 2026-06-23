@@ -2,7 +2,7 @@
 # Update the Home Assistant local "Wine Tracker (Dev)" addon from GitHub main.
 #
 # Run inside the HA SSH addon console:
-#   curl -fsSL https://raw.githubusercontent.com/xenofex7/ha-wine-tracker/main/scripts/update-ha-dev.sh | bash
+#   curl -fsSL https://raw.githubusercontent.com/ofer8/ha-wine-tracker/main/scripts/update-ha-dev.sh | bash
 #
 # Workflow:
 #   1. Clone/pull the repo to /tmp/ha-wine-tracker-repo (shallow)
@@ -13,7 +13,7 @@
 
 set -euo pipefail
 
-REPO_URL="https://github.com/xenofex7/ha-wine-tracker.git"
+REPO_URL="https://github.com/ofer8/ha-wine-tracker.git"
 REPO_DIR="/tmp/ha-wine-tracker-repo"
 ADDON_DIR="/addons/wine-tracker-dev"
 ADDON_SLUG="wine_tracker_dev"

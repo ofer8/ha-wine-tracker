@@ -1,7 +1,7 @@
 # Home Assistant App: Wine Tracker
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/xenofex7/ha-wine-tracker/main/logo.png" alt="Wine Tracker Logo" width="128">
+  <img src="https://raw.githubusercontent.com/ofer8/ha-wine-tracker/main/logo.png" alt="Wine Tracker Logo" width="128">
 </p>
 
 ![version][version-badge]
@@ -12,14 +12,14 @@ A sleek, modern wine cellar tracker running directly in your Home Assistant side
 ## Screenshots
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/xenofex7/ha-wine-tracker/main/assets/260220_main_screen.png" alt="Wine Cellar Overview" width="800">
+  <img src="https://raw.githubusercontent.com/ofer8/ha-wine-tracker/main/assets/260220_main_screen.png" alt="Wine Cellar Overview" width="800">
 </p>
 <p align="center">
-  <img src="https://raw.githubusercontent.com/xenofex7/ha-wine-tracker/main/assets/260220_statistics_screen.png" alt="Statistics with Globe & Charts" width="800">
+  <img src="https://raw.githubusercontent.com/ofer8/ha-wine-tracker/main/assets/260220_statistics_screen.png" alt="Statistics with Globe & Charts" width="800">
 </p>
 <p align="center">
-  <img src="https://raw.githubusercontent.com/xenofex7/ha-wine-tracker/main/assets/260220_add_wine_screen.png" alt="Add Wine - AI, Vivino or Manual" width="800">
-  <img src="https://raw.githubusercontent.com/xenofex7/ha-wine-tracker/main/assets/260220_wine_edit_screen.png" alt="Edit Wine Details" width="800">
+  <img src="https://raw.githubusercontent.com/ofer8/ha-wine-tracker/main/assets/260220_add_wine_screen.png" alt="Add Wine - AI, Vivino or Manual" width="800">
+  <img src="https://raw.githubusercontent.com/ofer8/ha-wine-tracker/main/assets/260220_wine_edit_screen.png" alt="Edit Wine Details" width="800">
 </p>
 
 ## Features
@@ -30,6 +30,7 @@ A sleek, modern wine cellar tracker running directly in your Home Assistant side
 - **Vivino wine search** - search by name, see ratings, region & price, and import directly; regional fallback chain surfaces country-specific wines (e.g. Australian labels)
 - **Vivino ID management** - view, edit & test Vivino wine links directly in the edit modal
 - **Reload missing data** - re-analyze wines with incomplete fields via AI or Vivino
+- **Buy list & restocking** - a wishlist of wines to buy (AI / Vivino / manual entry) plus an Out of Stock tab; move wishlist wines into the cellar or re-buy finished bottles in one tap
 - **Star rating** (1-5 stars), quick `+`/`−` quantity buttons & duplicate wines
 - **Bottle format** - track bottle sizes from Piccolo (0.1875l) to Nebuchadnezzar (15l), auto-detected by AI
 - **Cellar view modes** - Cards, List, Grid, and a sortable Table view with responsive columns
@@ -111,7 +112,11 @@ sensor:
 
 ## Documentation
 
-See the full documentation and changelog on [GitHub](https://github.com/xenofex7/ha-wine-tracker).
+See the full documentation and changelog on [GitHub](https://github.com/ofer8/ha-wine-tracker).
 
-[version-badge]: https://img.shields.io/badge/version-v1.11.0-blue.svg
+## Credits
+
+A fork of [xenofex7/ha-wine-tracker](https://github.com/xenofex7/ha-wine-tracker) by xenofex7. MIT licensed.
+
+[version-badge]: https://img.shields.io/badge/version-v1.13.0-blue.svg
 [ai-badge]: https://img.shields.io/badge/AI%20powered-label%20recognition-blueviolet.svg
