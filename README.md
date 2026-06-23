@@ -21,8 +21,6 @@
 
 A wine cellar tracker for Home Assistant or Docker - manage your entire collection from label photo to tasting notes.
 
-**📖 [Documentation & Demo →](https://xenofex7.github.io/ha-wine-tracker/)**
-
 ## Screenshots
 
 <p align="center">
@@ -52,6 +50,14 @@ A wine cellar tracker for Home Assistant or Docker - manage your entire collecti
 - **Storage location** with autocomplete from existing entries
 - **Region & purchase source** autocomplete from existing entries
 - **Grape variety** (e.g. Merlot, Pinot Noir, Chardonnay) with autocomplete
+
+### Buy List & Restocking
+
+- **Buy list** - keep a wishlist of wines you want to purchase, added by AI label scan, Vivino search, or manually through the same modal as the cellar
+- **Editable wishlist entries** - open and edit any wishlist wine's details just like a cellar bottle
+- **Move to cellar** - turn a wishlist wine into a cellar entry, either as a new bottle or merged into a matching existing wine, keeping its AI enrichment and timeline history
+- **Out-of-stock tab** - finished bottles collect in a dedicated "Out of Stock" view, with a matching quick-filter on the cellar page
+- **One-tap re-buy** - send an out-of-stock wine straight back to your wishlist to buy it again
 
 ### AI & Integrations
 
@@ -98,7 +104,7 @@ Or install manually:
 
 1. Go to **Settings → Add-ons → Add-on Store**
 2. Top right: **⋮ → Repositories**
-3. Add the repository URL: `https://github.com/xenofex7/ha-wine-tracker`
+3. Add the repository URL: `https://github.com/ofer8/ha-wine-tracker`
 4. **Wine Tracker** will appear in the store
 5. Click **Install → Start**
 
@@ -115,7 +121,7 @@ Run Wine Tracker without Home Assistant using Docker Compose.
 ```yaml
 services:
   wine-tracker:
-    image: ghcr.io/xenofex7/wine-tracker:latest
+    image: ghcr.io/ofer8/wine-tracker:latest
     ports:
       - "5050:5050"
     volumes:
@@ -442,11 +448,15 @@ automation:
 > session, so an unauthenticated REST sensor receives `401`. In the Home Assistant add-on
 > (the default), access is gated by HA and the sensors work as shown.
 
+## Credits
+
+Wine Tracker is a fork of [xenofex7/ha-wine-tracker](https://github.com/xenofex7/ha-wine-tracker), originally created by xenofex7. Licensed under MIT.
+
 ## License
 
 MIT
 
-[version-badge]: https://img.shields.io/badge/version-v1.12.0-blue.svg
+[version-badge]: https://img.shields.io/badge/version-v1.13.0-blue.svg
 [stage-badge]: https://img.shields.io/badge/project%20stage-stable-brightgreen.svg
 [maintained-badge]: https://img.shields.io/badge/maintained-yes-brightgreen.svg
 [license-badge]: https://img.shields.io/badge/license-MIT-green.svg
@@ -454,10 +464,10 @@ MIT
 [ha-badge]: https://img.shields.io/badge/Home%20Assistant-Add--on-41BDF5.svg?logo=homeassistant&logoColor=white
 [ai-badge]: https://img.shields.io/badge/AI%20powered-label%20recognition-blueviolet.svg
 [arch-badge]: https://img.shields.io/badge/arch-aarch64-informational.svg
-[stars-badge]: https://img.shields.io/github/stars/xenofex7/ha-wine-tracker?style=flat&logo=github
-[issues-badge]: https://img.shields.io/github/issues/xenofex7/ha-wine-tracker?style=flat&logo=github
-[commit-badge]: https://img.shields.io/github/last-commit/xenofex7/ha-wine-tracker?style=flat&logo=github
-[activity-badge]: https://img.shields.io/github/commit-activity/y/xenofex7/ha-wine-tracker?style=flat&logo=github
+[stars-badge]: https://img.shields.io/github/stars/ofer8/ha-wine-tracker?style=flat&logo=github
+[issues-badge]: https://img.shields.io/github/issues/ofer8/ha-wine-tracker?style=flat&logo=github
+[commit-badge]: https://img.shields.io/github/last-commit/ofer8/ha-wine-tracker?style=flat&logo=github
+[activity-badge]: https://img.shields.io/github/commit-activity/y/ofer8/ha-wine-tracker?style=flat&logo=github
 [docker-badge]: https://img.shields.io/badge/Docker-standalone-2496ED.svg?logo=docker&logoColor=white
 [my-ha-badge]: https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg
-[my-ha-url]: https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2Fxenofex7%2Fha-wine-tracker
+[my-ha-url]: https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2Fofer8%2Fha-wine-tracker

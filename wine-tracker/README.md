@@ -25,6 +25,7 @@ Vivino to import wines with ratings and pricing.
 - 📊 Statistics with donut charts, stock history chart, total liters & value overview
 - 📋 Cellar view modes - Cards, List, Grid, and sortable Table view
 - 📅 Activity timeline - track wines added, consumed, restocked & removed
+- 🛒 Buy list with wishlist & out-of-stock tabs - add wines to buy, move them into the cellar, or re-buy finished bottles
 - 💬 AI sommelier chat with image upload, persistent history, and full cellar CRUD (add/edit/delete wines from the conversation)
 - 📈 Maturity graph, taste profile & food pairings (AI-generated, auto-filled on every AI add)
 - 🎨 6 themes with dark & light mode
@@ -35,11 +36,15 @@ Vivino to import wines with ratings and pricing.
 Data is stored locally under `/share/wine-tracker/` and preserved across
 updates and restarts.
 
-[version-badge]: https://img.shields.io/badge/version-v1.11.0-blue.svg
+## Credits
+
+A fork of [xenofex7/ha-wine-tracker](https://github.com/xenofex7/ha-wine-tracker) by xenofex7. MIT licensed.
+
+[version-badge]: https://img.shields.io/badge/version-v1.13.0-blue.svg
 [stage-badge]: https://img.shields.io/badge/project%20stage-stable-brightgreen.svg
 [maintained-badge]: https://img.shields.io/badge/maintained-yes-brightgreen.svg
 [license-badge]: https://img.shields.io/badge/license-MIT-green.svg
-[stars-badge]: https://img.shields.io/github/stars/xenofex7/ha-wine-tracker?style=flat&logo=github
-[issues-badge]: https://img.shields.io/github/issues/xenofex7/ha-wine-tracker?style=flat&logo=github
-[github-url]: https://github.com/xenofex7/ha-wine-tracker
-[issues-url]: https://github.com/xenofex7/ha-wine-tracker/issues
+[stars-badge]: https://img.shields.io/github/stars/ofer8/ha-wine-tracker?style=flat&logo=github
+[issues-badge]: https://img.shields.io/github/issues/ofer8/ha-wine-tracker?style=flat&logo=github
+[github-url]: https://github.com/ofer8/ha-wine-tracker
+[issues-url]: https://github.com/ofer8/ha-wine-tracker/issues
